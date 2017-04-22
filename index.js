@@ -4,13 +4,17 @@ var server = require('http').Server(app)
 var io = require('socket.io')(server)
 
 var fs = require('fs')
-var points = {}
+var origin_points = {}
 fs.readFile("./data/hook.json", 'utf8', function(err, data) {
     if (err) {
         return console.log(err)
     }
-    points = JSON.parse(data)
+    origin_points = JSON.parse(data)
 })
+var deepcopy = require('deepcopy')
+
+var anim_scheduler = require('./anim_scheduler')
+var solver = require('./refolding_solver')
 
 app.use(express.static(__dirname + '/public'))
 
@@ -20,15 +24,13 @@ app.get('/', function(req, res) {
 
 io.on('connection', function(client) {
     console.log('user on connection')
-    client.on('load', function(data) {
-        console.log(data)
-        io.emit('draw', points)
-    })
+    points = deepcopy(origin_points)
+    io.emit('draw', points)
     client.on('refold', function(data) {
-        console.log(data)
+        anim_scheduler.schedule(100, points, solver.metric_gd, io)
     })
 })
 
 server.listen(3000, function() {
-    console.log('Listening on 3000!!!')
+    console.log('Listening on 3000...')
 })

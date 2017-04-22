@@ -9,7 +9,6 @@
 
   <body>
     <h1>Welcome to Refolding Planar Polygons</h1>
-    <button type="button" id="load_btn">Load</button>
     <button type="button" id="refold_btn">refold</button>
     <div>
       <canvas id="s_canvas">No Canvas</canvas>
@@ -31,28 +30,28 @@
     </script>
 
     <script>
-     $("#load_btn").click( function() {
-         socket.emit("load", "load button clicked")
-     })
      $("#refold_btn").click( function() {
          socket.emit("refold", "refold button clicked")
      })
-     function draw(ctx, points, scale) {
-         ctx.moveTo(points[0][0] * scale, points[0][1] * scale)
+     function draw(canvas, points, scale) {
+         context = canvas.getContext("2d")
+         context.clearRect(0, 0, canvas.width, canvas.height)
+         context.beginPath()
+         context.moveTo(points[0][0] * scale, points[0][1] * scale)
          for (var i = 1; i < points.length; i++) {
-             ctx.lineTo(points[i][0] * scale, points[i][1] * scale)
+             context.lineTo(points[i][0] * scale, points[i][1] * scale)
          }
-         ctx.lineTo(points[0][0] * scale, points[0][1] * scale)
-         ctx.stroke()
+         context.lineTo(points[0][0] * scale, points[0][1] * scale)
+         context.stroke()
      }
      var socket = io()
      socket.on("draw", function(data) {
          $("#status_label").text(data["s_points"].length)
          var s_points = data["s_points"], t_points = data["t_points"]
-         var s_ctx = document.getElementById("s_canvas").getContext("2d")
-         var t_ctx = document.getElementById("t_canvas").getContext("2d")
-         draw(s_ctx, s_points, 30)
-         draw(t_ctx, t_points, 30)
+         var s_canvas = document.getElementById("s_canvas")
+         var t_canvas = document.getElementById("t_canvas")
+         draw(s_canvas, s_points, 30)
+         draw(t_canvas, t_points, 30)
      })
     </script>
   </body>
