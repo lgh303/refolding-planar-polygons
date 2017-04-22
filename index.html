@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Refolding Planar Polygons</title>
+    <style>
+      canvas{border:2px solid #d3d3d3;}
+    </style>
+  </head>
+
+  <body>
+    <h1>Welcome to Refolding Planar Polygons</h1>
+    <button type="button" id="load_btn">Load</button>
+    <button type="button" id="refold_btn">refold</button>
+    <div>
+      <canvas id="s_canvas">No Canvas</canvas>
+      <canvas id="t_canvas">No Canvas</canvas>
+    </div>
+    <div>
+      <label id="status_label">Empty label</label>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/jquery/dist/jquery.min.js"></script>
+    <script>
+     var width=$(window).width();
+     $("#s_canvas").attr("width",width*0.35);
+     $("#t_canvas").attr("width",width*0.35);
+     var height=$(window).height();
+     $("#s_canvas").attr("height",height*0.66);
+     $("#t_canvas").attr("height",height*0.66);
+    </script>
+
+    <script>
+     $("#load_btn").click( function() {
+         socket.emit("load", "load button clicked")
+     })
+     $("#refold_btn").click( function() {
+         socket.emit("refold", "refold button clicked")
+     })
+     function draw(ctx, points, scale) {
+         ctx.moveTo(points[0][0] * scale, points[0][1] * scale)
+         for (var i = 1; i < points.length; i++) {
+             ctx.lineTo(points[i][0] * scale, points[i][1] * scale)
+         }
+         ctx.lineTo(points[0][0] * scale, points[0][1] * scale)
+         ctx.stroke()
+     }
+     var socket = io()
+     socket.on("draw", function(data) {
+         $("#status_label").text(data["s_points"].length)
+         var s_points = data["s_points"], t_points = data["t_points"]
+         var s_ctx = document.getElementById("s_canvas").getContext("2d")
+         var t_ctx = document.getElementById("t_canvas").getContext("2d")
+         draw(s_ctx, s_points, 30)
+         draw(t_ctx, t_points, 30)
+     })
+    </script>
+  </body>
+  
+</html>

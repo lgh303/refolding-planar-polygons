@@ -1,0 +1,31 @@
+{
+  "name": "refolding-planar-polygons",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lgh303/refolding-planar-polygons.git"
+  },
+  "author": "liguohao",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lgh303/refolding-planar-polygons/issues"
+  },
+  "homepage": "https://github.com/lgh303/refolding-planar-polygons#readme",
+  "dependencies": {
+    "express": "^4.15.2",
+    "fs": "0.0.1-security",
+    "jquery": "^3.2.1",
+    "mathjs": "^3.12.0",
+    "pug": "^2.0.0-beta.12",
+    "socket.io": "^1.7.3"
+  }
+}
