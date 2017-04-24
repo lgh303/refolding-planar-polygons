@@ -68,7 +68,7 @@ function energy_status(points) {
         //     grad_i[1] += penalty_weight * grad.gradient[1]
         //     energy += penalty_weight * grad.energy
         // }
-        // energy_grad.push(grad_i)
+        energy_grad.push(grad_i)
     }
     return {
         "energy": energy,
