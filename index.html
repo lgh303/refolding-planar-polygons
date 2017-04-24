@@ -3,7 +3,8 @@
   <head>
     <title>Refolding Planar Polygons</title>
     <style>
-      canvas{border:2px solid #d3d3d3;}
+     canvas{border:2px solid #d3d3d3;}
+     label{display:inline-block; width: 480px; text-align:center;}
     </style>
   </head>
 
@@ -15,43 +16,65 @@
       <canvas id="t_canvas">No Canvas</canvas>
     </div>
     <div>
-      <label id="status_label">Empty label</label>
+      <label id="s_status">s_canvas status</label>
+      <label id="t_status">t_canvas status</label>
     </div>
     
     <script src="/socket.io/socket.io.js"></script>
     <script src="/jquery/dist/jquery.min.js"></script>
     <script>
      var width=$(window).width();
-     $("#s_canvas").attr("width",width*0.35);
-     $("#t_canvas").attr("width",width*0.35);
+     $("#s_canvas").attr("width",width*0.35)
+     $("#t_canvas").attr("width",width*0.35)
+     $("#s_status").attr("width",width*0.35)
+     $("#t_status").attr("width",width*0.35)
      var height=$(window).height();
-     $("#s_canvas").attr("height",height*0.66);
-     $("#t_canvas").attr("height",height*0.66);
+     $("#s_canvas").attr("height",height*0.66)
+     $("#t_canvas").attr("height",height*0.66)
     </script>
 
     <script>
      $("#refold_btn").click( function() {
          socket.emit("refold", "refold button clicked")
      })
-     function draw(canvas, points, scale) {
+     function draw(canvas, points) {
+         var scale = [1, 1], offset = [0, 0]
+         var max_coord = [points[0][0], points[0][1]],
+             min_coord = [points[0][0], points[0][1]]
+         for (var i = 1; i < points.length; i++) {
+             max_coord[0] = Math.max(max_coord[0], points[i][0])
+             max_coord[1] = Math.max(max_coord[1], points[i][1])
+             min_coord[0] = Math.min(min_coord[0], points[i][0])
+             min_coord[1] = Math.min(min_coord[1], points[i][1])
+         }
+         if (max_coord[0] - min_coord[0] > 0) {
+             scale[0] = canvas.width * 0.66 / (max_coord[0] - min_coord[0])
+             offset[0] = 0.5 * (canvas.width - (max_coord[0] + min_coord[0]) * scale[0])
+         }
+         if (max_coord[1] - min_coord[1] > 0) {
+             scale[1] = canvas.height * 0.66 / (max_coord[1] - min_coord[1])
+             offset[1] = 0.5 * (canvas.height - (max_coord[1] + min_coord[1]) * scale[1])
+         }
+         
          context = canvas.getContext("2d")
          context.clearRect(0, 0, canvas.width, canvas.height)
          context.beginPath()
-         context.moveTo(points[0][0] * scale, points[0][1] * scale)
+         context.moveTo(points[0][0] * scale[0] + offset[0], points[0][1] * scale[1] + offset[1])
          for (var i = 1; i < points.length; i++) {
-             context.lineTo(points[i][0] * scale, points[i][1] * scale)
+             context.lineTo(points[i][0] * scale[0] + offset[0], points[i][1] * scale[1] + offset[1])
          }
-         context.lineTo(points[0][0] * scale, points[0][1] * scale)
+         context.lineTo(points[0][0] * scale[0] + offset[0], points[0][1] * scale[1] + offset[1])
          context.stroke()
      }
      var socket = io()
      socket.on("draw", function(data) {
-         $("#status_label").text(data["s_points"].length)
+         $("#s_status").text(data["s_energy"])
+         $("#t_status").text(data["t_energy"])
          var s_points = data["s_points"], t_points = data["t_points"]
          var s_canvas = document.getElementById("s_canvas")
          var t_canvas = document.getElementById("t_canvas")
-         draw(s_canvas, s_points, 30)
-         draw(t_canvas, t_points, 30)
+         draw(s_canvas, s_points)
+         draw(t_canvas, t_points)
      })
     </script>
   </body>

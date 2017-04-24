@@ -24,10 +24,16 @@ app.get('/', function(req, res) {
 
 io.on('connection', function(client) {
     console.log('user on connection')
-    points = deepcopy(origin_points)
-    io.emit('draw', points)
-    client.on('refold', function(data) {
-        anim_scheduler.schedule(100, points, solver.metric_gd, io)
+    data = deepcopy(origin_points)
+    var s_energy_status = solver.energy_status(data.s_points),
+        t_energy_status = solver.energy_status(data.t_points)
+    data["s_energy"] = s_energy_status.energy
+    data["t_energy"] = t_energy_status.energy
+    client.emit('draw', data)
+    status_save = {"s_status": s_energy_status, "t_status": t_energy_status}
+    client.on('refold', function(message) {
+        // anim_scheduler.schedule(500, data, status_save, solver.dist_gd, client)
+        anim_scheduler.schedule(60, deepcopy(data), deepcopy(status_save), solver.energy_gd, client)
     })
 })
 
