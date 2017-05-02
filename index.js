@@ -6,6 +6,7 @@ var fs = require('fs')
 var deepcopy = require('deepcopy')
 
 var solver = require('./solver')
+var utils = require('./utils')
 
 app.use(express.static(__dirname + '/public'))
 
@@ -21,11 +22,10 @@ fs.readFile("./data/hook.json", "utf8", function(err, json_data) {
         throw err
     }
     data = JSON.parse(json_data)
-    var s_energy_status = solver.energy_status(data.s_points),
-        t_energy_status = solver.energy_status(data.t_points)
-    data["s_energy"] = s_energy_status.energy
-    data["t_energy"] = t_energy_status.energy
-    status_save = {"s_status": s_energy_status, "t_status": t_energy_status}
+    status_save = utils.status(data)
+    data["s_energy"] = status_save.s_status.energy
+    data["t_energy"] = status_save.t_status.energy
+    data["distance"] = status_save.distance
     
     fs.readFile("./data/hook_results.json", "utf8", function(err, json_data) {
         if (err) {

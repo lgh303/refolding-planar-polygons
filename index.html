@@ -12,6 +12,7 @@
     <h1>Welcome to Refolding Planar Polygons</h1>
     <button type="button" id="refold_btn" disabled>refold</button>
     <button type="refresh" id="refresh_btn">refresh</button>
+    <label id="distance_status">distance status</label>
     <div>
       <canvas id="s_canvas">No Canvas</canvas>
       <canvas id="t_canvas">No Canvas</canvas>
@@ -41,6 +42,7 @@
          results = data
          drawFrame(results[0])
          $("#refold_btn").removeAttr("disabled")
+         $("#refresh_btn").removeAttr("disabled")
      })
 
      var s_canvas = document.getElementById("s_canvas")
@@ -48,37 +50,38 @@
      function drawFrame(data) {
          $("#s_status").text(data["s_energy"])
          $("#t_status").text(data["t_energy"])
+         $("#distance_status").text(data["distance"])
          var s_points = data["s_points"], t_points = data["t_points"]
          drawCanvas(s_canvas, s_points)
          drawCanvas(t_canvas, t_points)
      }
      function drawCanvas(canvas, points) {
-         var scale = [1, 1], offset = [0, 0]
-         var max_coord = [points[0][0], points[0][1]],
-             min_coord = [points[0][0], points[0][1]]
-         for (var i = 1; i < points.length; i++) {
-             max_coord[0] = Math.max(max_coord[0], points[i][0])
-             max_coord[1] = Math.max(max_coord[1], points[i][1])
-             min_coord[0] = Math.min(min_coord[0], points[i][0])
-             min_coord[1] = Math.min(min_coord[1], points[i][1])
-         }
-         if (max_coord[0] - min_coord[0] > 0) {
-             scale[0] = canvas.width * 0.66 / (max_coord[0] - min_coord[0])
-             offset[0] = 0.5 * (canvas.width - (max_coord[0] + min_coord[0]) * scale[0])
-         }
-         if (max_coord[1] - min_coord[1] > 0) {
-             scale[1] = canvas.height * 0.66 / (max_coord[1] - min_coord[1])
-             offset[1] = 0.5 * (canvas.height - (max_coord[1] + min_coord[1]) * scale[1])
-         }
-         
+         var scale = [30, 30], offset = [60, 60]
+         /* var max_coord = [points[0][0], points[0][1]],
+          *     min_coord = [points[0][0], points[0][1]]
+          * for (var i = 1; i < points.length; i++) {
+          *     max_coord[0] = Math.max(max_coord[0], points[i][0])
+          *     max_coord[1] = Math.max(max_coord[1], points[i][1])
+          *     min_coord[0] = Math.min(min_coord[0], points[i][0])
+          *     min_coord[1] = Math.min(min_coord[1], points[i][1])
+          * }
+          * if (max_coord[0] - min_coord[0] > 0) {
+          *     scale[0] = canvas.width * 0.66 / (max_coord[0] - min_coord[0])
+          *     offset[0] = 0.5 * (canvas.width - (max_coord[0] + min_coord[0]) * scale[0])
+          * }
+          * if (max_coord[1] - min_coord[1] > 0) {
+          *     scale[1] = canvas.height * 0.66 / (max_coord[1] - min_coord[1])
+          *     offset[1] = 0.5 * (canvas.height - (max_coord[1] + min_coord[1]) * scale[1])
+          * }*/
+         var s = Math.min(scale[0], scale[1])
          context = canvas.getContext("2d")
          context.clearRect(0, 0, canvas.width, canvas.height)
          context.beginPath()
-         context.moveTo(points[0][0] * scale[0] + offset[0], points[0][1] * scale[1] + offset[1])
+         context.moveTo(points[0][0] * s + offset[0], points[0][1] * s + offset[1])
          for (var i = 1; i < points.length; i++) {
-             context.lineTo(points[i][0] * scale[0] + offset[0], points[i][1] * scale[1] + offset[1])
+             context.lineTo(points[i][0] * s + offset[0], points[i][1] * s + offset[1])
          }
-         context.lineTo(points[0][0] * scale[0] + offset[0], points[0][1] * scale[1] + offset[1])
+         context.lineTo(points[0][0] * s + offset[0], points[0][1] * s + offset[1])
          context.stroke()
      }
      
@@ -116,6 +119,7 @@
      })
      $("#refresh_btn").click( function() {
          $("#refold_btn").attr("disabled", "disabled")
+         $("#refresh_btn").attr("disabled", "disabled")
          socket.emit("refresh", "refresh message")
      })
 

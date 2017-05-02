@@ -1,13 +1,13 @@
 var solver = require('./solver')
+var utils = require('./utils')
 
 var fs = require('fs')
 
 var save_results = function(data) {
-    var s_energy_status = solver.energy_status(data.s_points),
-        t_energy_status = solver.energy_status(data.t_points)
-    data["s_energy"] = s_energy_status.energy
-    data["t_energy"] = t_energy_status.energy
-    var status_save = {"s_status": s_energy_status, "t_status": t_energy_status}
+    var status_save = utils.status(data)
+    data["s_energy"] = status_save.s_status.energy
+    data["t_energy"] = status_save.t_status.energy
+    data["distance"] = status_save.distance
 
     var results = solver.energy_gd(data, status_save)
 
@@ -27,4 +27,3 @@ fs.readFile("./data/hook.json", "utf8", function(err, data) {
     points = JSON.parse(data)
     save_results(points)
 })
-
