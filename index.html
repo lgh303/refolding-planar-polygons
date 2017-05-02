@@ -10,7 +10,8 @@
 
   <body>
     <h1>Welcome to Refolding Planar Polygons</h1>
-    <button type="button" id="refold_btn">refold</button>
+    <button type="button" id="refold_btn" disabled>refold</button>
+    <button type="refresh" id="refresh_btn">refresh</button>
     <div>
       <canvas id="s_canvas">No Canvas</canvas>
       <canvas id="t_canvas">No Canvas</canvas>
@@ -34,10 +35,24 @@
     </script>
 
     <script>
-     $("#refold_btn").click( function() {
-         socket.emit("refold", "refold button clicked")
+     var results = null
+     var socket = io()
+     socket.on("results", function(data) {
+         results = data
+         drawFrame(results[0])
+         $("#refold_btn").removeAttr("disabled")
      })
-     function draw(canvas, points) {
+
+     var s_canvas = document.getElementById("s_canvas")
+     var t_canvas = document.getElementById("t_canvas")
+     function drawFrame(data) {
+         $("#s_status").text(data["s_energy"])
+         $("#t_status").text(data["t_energy"])
+         var s_points = data["s_points"], t_points = data["t_points"]
+         drawCanvas(s_canvas, s_points)
+         drawCanvas(t_canvas, t_points)
+     }
+     function drawCanvas(canvas, points) {
          var scale = [1, 1], offset = [0, 0]
          var max_coord = [points[0][0], points[0][1]],
              min_coord = [points[0][0], points[0][1]]
@@ -66,16 +81,44 @@
          context.lineTo(points[0][0] * scale[0] + offset[0], points[0][1] * scale[1] + offset[1])
          context.stroke()
      }
-     var socket = io()
-     socket.on("draw", function(data) {
-         $("#s_status").text(data["s_energy"])
-         $("#t_status").text(data["t_energy"])
-         var s_points = data["s_points"], t_points = data["t_points"]
-         var s_canvas = document.getElementById("s_canvas")
-         var t_canvas = document.getElementById("t_canvas")
-         draw(s_canvas, s_points)
-         draw(t_canvas, t_points)
+     
+     var runAnimation = false
+
+     window.requestAnimFrame = ( function(callback) {
+         return window.requestAnimationFrame || window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame || window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function(callback) {
+                    window.setTimeout(callback, 1000 / 5)
+                }
+     })()
+
+     function animate(index) {
+         if (runAnimation) {
+             drawFrame(results[index])
+             requestAnimationFrame(function() {
+                 if (index + 1 < results.length) {
+                     animate(index + 1)
+                 } else {
+                     runAnimation = false
+                     $("#refold_btn").removeAttr("disabled")
+                 }
+             })
+         }
+     }
+     
+     $("#refold_btn").click( function() {
+         if (!runAnimation) {
+             $("#refold_btn").attr("disabled", "disabled")
+             runAnimation = true
+             animate(0)
+         }
      })
+     $("#refresh_btn").click( function() {
+         $("#refold_btn").attr("disabled", "disabled")
+         socket.emit("refresh", "refresh message")
+     })
+
     </script>
   </body>
   

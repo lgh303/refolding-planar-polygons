@@ -1,5 +1,4 @@
 var math = require('mathjs')
-var scheduler = require('./anim_scheduler')
 
 const base_learning_rate = 0.03
 const bias_gamma = 1
@@ -7,11 +6,12 @@ const stepsize = 10000
 const decay_rate = 0.5
 const max_iter = 150
 
-// var bound_points = [[-5, -5], [-5, 15], [15, 15], [15, -5]]
-// var penalty_weight = 0
+var bound_points = [[-5, 15], [-5, -5], [15, -5], [15, 15]]
+var penalty_weight = 0
 
 
-function dist_gd(data, status_save, queue, interval) {
+function dist_gd(data, status_save) {
+    var results = [data]
     var learning_rate = base_learning_rate
     var steps = 0
     for (var i = 1; i < 20; i++) {
@@ -24,8 +24,9 @@ function dist_gd(data, status_save, queue, interval) {
         var dist_gradient = math.multiply(2, math.subtract(s_points, t_points))
         s_points = math.subtract(s_points, math.multiply(learning_rate, dist_gradient))
         data = {"s_points": s_points, "t_points": t_points}
-        scheduler.add_job(queue, interval * i, data)
+        results.push(data)
     }
+    return results
 }
 
 function energy_gradient(w, v, p) {
@@ -62,12 +63,12 @@ function energy_status(points) {
             }
         }
         // bound penalty
-        // for (var j = 0; j < 4; j++) {
-        //     var grad = energy_gradient(bound_points[j], bound_points[(j + 1) % 4], points[i])
-        //     grad_i[0] += penalty_weight * grad.gradient[0]
-        //     grad_i[1] += penalty_weight * grad.gradient[1]
-        //     energy += penalty_weight * grad.energy
-        // }
+        for (var j = 0; j < 4; j++) {
+            var grad = energy_gradient(bound_points[j], bound_points[(j + 1) % 4], points[i])
+            grad_i[0] += penalty_weight * grad.gradient[0]
+            grad_i[1] += penalty_weight * grad.gradient[1]
+            energy += penalty_weight * grad.energy
+        }
         energy_grad.push(grad_i)
     }
     return {
@@ -76,7 +77,8 @@ function energy_status(points) {
     }
 }
 
-function energy_gd(data, status_save, queue, interval) {
+function energy_gd(data, status_save) {
+    var results = [data]
     var learning_rate = base_learning_rate
     var steps = 0
     var N = data.s_points.length
@@ -151,8 +153,9 @@ function energy_gd(data, status_save, queue, interval) {
             "s_energy": s_status.energy,
             "t_energy": t_status.energy,
         }
-        scheduler.add_job(queue, interval * i, data)
+        results.push(data)
     }
+    return results
 }
 
 exports.dist_gd = dist_gd
