@@ -14,10 +14,12 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html')
 })
 
+const dataset = "leaf_plane"
+
 var data = null
 var status_save = null
 var results = null
-fs.readFile("./data/hook.json", "utf8", function(err, json_data) {
+fs.readFile("./data/" + dataset + ".json", "utf8", function(err, json_data) {
     if (err) {
         throw err
     }
@@ -27,7 +29,7 @@ fs.readFile("./data/hook.json", "utf8", function(err, json_data) {
     data["t_energy"] = status_save.t_status.energy
     data["distance"] = status_save.distance
     
-    fs.readFile("./data/hook_results.json", "utf8", function(err, json_data) {
+    fs.readFile("./data/" + dataset + "_results.json", "utf8", function(err, json_data) {
         if (err) {
             throw err
         }

@@ -8,8 +8,10 @@ var energy_gradient = utils.energy_gradient
 var energy_status = utils.energy_status
 
 const base_learning_rate = 0.03
-const max_iter = 303
-const THRESHOLD = 0.1
+const max_iter = 400
+const THRESHOLD = 0.4
+const alpha = 0.2
+const gamma = 1.5
 
 function dist_gd(data, status_save) {
     var results = [data]
@@ -55,47 +57,60 @@ function update_config_naive(config, D, G) {
     }
 }
 
-function calc_edge_length(points) {
-    var P = points
-    var N = P.length
-    var lengths = []
+function calc_edge_constrains(constrains_idx, hp, lp) {
+    var N = lp.length
+    // constrains: list of l_i^2
+    var constrains = []
     for (var i = 0; i < N; i++) {
-        var diffX = P[i][0] - P[(i+1)%N][0],
-            diffY = P[i][1] - P[(i+1)%N][1]
-        lengths.push(diffX * diffX + diffY * diffY)
+        if (constrains_idx[i] == 1) {
+            var lx = lp[i][0] - lp[(i+1)%N][0],
+                ly = lp[i][1] - lp[(i+1)%N][1],
+                hx = hp[i][0] - hp[(i+1)%N][0],
+                hy = hp[i][1] - hp[(i+1)%N][1]
+            var dx = (lx + hx) * 0.5, dy = (ly + hy) * 0.5
+            constrains.push(dx * dx + dy * dy)
+        } else {
+            constrains.push(-1)
+        }
     }
-    return lengths
+    return constrains
 }
 
-function calc_constrains_omega(config, edge_constrains) {
+function calc_constrains_omega(config, edge_constrains, constrains_idx) {
     var P = config.points
     var N = P.length
     var omegas = []
     for (var i = 0; i < N; i++) {
-        var diffX = P[i][0] - P[(i+1)%N][0],
-            diffY = P[i][1] - P[(i+1)%N][1]
-        omegas.push(diffX * diffX + diffY * diffY - edge_constrains[i])
+        if (constrains_idx[i] == 1) {
+            var diffX = P[i][0] - P[(i+1)%N][0],
+                diffY = P[i][1] - P[(i+1)%N][1]
+            omegas.push(diffX * diffX + diffY * diffY - edge_constrains[i])
+        }
     }
     return omegas
 }
 
-function update_config_with_constrains(config, D, G, edge_constrains) {
+function update_config_with_constrains(config, D, G, edge_constrains, constrains_idx) {
     var P = config.points
     var N = P.length
     var k_list = []
+    var i_constrains = 0
     for (var i = 0; i < N; i++) {
-        k_list.push([i, (2*i+0) % (2*N), 2 * (P[i][0] - P[(i+1)%N][0])])
-        k_list.push([i, (2*i+1) % (2*N), 2 * (P[i][1] - P[(i+1)%N][1])])
-        k_list.push([i, (2*i+2) % (2*N), 2 * (P[(i+1)%N][0] - P[i][0])])
-        k_list.push([i, (2*i+3) % (2*N), 2 * (P[(i+1)%N][1] - P[i][1])])
+        if (constrains_idx[i] == 1) {
+            k_list.push([i_constrains, (2*i+0) % (2*N), 2 * (P[i][0] - P[(i+1)%N][0])])
+            k_list.push([i_constrains, (2*i+1) % (2*N), 2 * (P[i][1] - P[(i+1)%N][1])])
+            k_list.push([i_constrains, (2*i+2) % (2*N), 2 * (P[(i+1)%N][0] - P[i][0])])
+            k_list.push([i_constrains, (2*i+3) % (2*N), 2 * (P[(i+1)%N][1] - P[i][1])])
+            i_constrains = i_constrains + 1
+        }
     }
+    
     for (var i = 0; i < 2 * N; i++) {
-        k_list.push([N, i, G[i]])
+        k_list.push([i_constrains, i, G[i]])
     }
-    var K = CSRMatrix.fromList(k_list, N + 1, 2 * N).toDense()
-    var alpha = 0.2
-    var gamma = 0.4
-    var f = calc_constrains_omega(config, edge_constrains)
+    var n_constrains = i_constrains + 1
+    var K = CSRMatrix.fromList(k_list, n_constrains, 2 * N).toDense()
+    var f = calc_constrains_omega(config, edge_constrains, constrains_idx)
     f.push(gamma / alpha)
     K = $M(K)
     D = $V(D)
@@ -120,9 +135,8 @@ function update_config_with_constrains(config, D, G, edge_constrains) {
 }
 
 function energy_gd(data, status_save) {
-    var edge_constrains = calc_edge_length(data.s_points)
-    
     var results = [data]
+    var constrains_idx = data.constrains_idx
     for (var i = 0; i < max_iter; i++) {
         console.log("Iteration " + i)
         var s_points = data.s_points, t_points = data.t_points
@@ -141,7 +155,10 @@ function energy_gd(data, status_save) {
         var h_grad = math.flatten(high_config.status.energy_grad)
         var G = math.divide(h_grad, math.norm(h_grad))
         // update_config_naive(high_config, D, G)
-        update_config_with_constrains(high_config, D, G, edge_constrains)
+        var edge_constrains = calc_edge_constrains(
+            constrains_idx,
+            high_config.points, low_config.points)
+        update_config_with_constrains(high_config, D, G, edge_constrains, constrains_idx)
         
         if (high_config.label === 0) {
             s_points = high_config.points

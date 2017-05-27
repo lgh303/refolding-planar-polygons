@@ -3,6 +3,8 @@ var utils = require('./utils')
 
 var fs = require('fs')
 
+const dataset = "leaf_plane"
+
 var save_results = function(data) {
     var status_save = utils.status(data)
     data["s_energy"] = status_save.s_status.energy
@@ -11,8 +13,7 @@ var save_results = function(data) {
 
     var results = solver.energy_gd(data, status_save)
 
-    fs.writeFileSync("./data/hook_results.json", JSON.stringify(results),
-                     "utf8", function(err) {
+    fs.writeFileSync("./data/" + dataset + "_results.json", JSON.stringify(results), "utf8", function(err) {
         if (err) {
             throw err
         }
@@ -20,7 +21,7 @@ var save_results = function(data) {
 }
 
 var points = null
-fs.readFile("./data/hook.json", "utf8", function(err, data) {
+fs.readFile("./data/" + dataset + ".json", "utf8", function(err, data) {
     if (err) {
         throw err
     }
