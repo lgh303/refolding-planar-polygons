@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <!-- No Baidu Siteapp -->
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+
+    <!-- Bad idea to set user-scalable to "no" because it negatively affects accessibility -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>hehe</title>
+</head>
+<body>
+
+    <button id="forceBegin">&lt;|</button>
+    <button id="forcePrevious">&lt;</button>
+    <button id="play">Play</button>
+    <button id="forceNext">&gt;</button>
+    <button id="forceEnd">&gt;|</button>
+
+    <div id="draw">
+        <svg id="area-left"></svg>
+        <svg id="area-right"></svg>
+
+        <div id="draw-actions">
+            <button id="draw-action-done">Done</button>
+            <button id="draw-action-cancel">Cancel</button>
+            <button id="draw-action-clear">Clear</button>
+        </div>
+    </div>
+
+    <!-- <link rel="stylesheet" href="test.css"> -->
+    <script src="jquery.min.js"></script>
+    <script src="d3.min.js"></script>
+
+    <script>
+        var leftpoint = [];
+        var rightpoint = [];
+        var leftpath = [];
+        var rightpath = [];
+        var radius = 5;
+        var selected = -1;
+        var left_circle_id_prefix = "left-circle-";
+        var left_path_id_prefix = "left-path-";
+
+        d3.select("#area-left")
+            .attr("width", 600)
+            .attr("height", 400)
+            .style("border", "1px solid");
+        d3.select("#area-right")
+            .attr("width", 600)
+            .attr("height", 400)
+            .style("border", "1px solid");
+
+        d3.select("#area-left").on("click", function(e=window.event) {
+            var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-left").offset().left;
+            var cy = (e.pageY || e.clientY + document.body.scrollTop) - $("#area-left").offset().top;
+            console.log(cx, cy);
+
+            var collision = false;
+            for(var i=0; i<leftpoint.length; i ++) {
+                var dist = (cx-leftpoint[i][0])**2 + (cy-leftpoint[i][1])**2;
+                if(dist <= radius**2) {
+                    if(selected != -1) {
+                        d3.select("#" + left_circle_id_prefix + selected)
+                        .attr("fill", "black");
+                    }
+                    selected = i;
+                    d3.select("#" + left_circle_id_prefix + selected)
+                        .transition()
+                        .duration(100)
+                        .attr("fill", "red");
+                    collision = true;
+                    console.log("collision");
+                    break;
+                }
+            }
+
+            if(!collision) {
+                selected = -1;
+                d3.select("#area-left")
+                    .append("circle")
+                    .attr("id", left_circle_id_prefix + leftpoint.length)
+                    .attr("cx", cx)
+                    .attr("cy", cy)
+                    .attr("r", radius);
+                leftpoint.push([cx, cy]);
+            }
+        });
+
+        d3.select("#area-left").on("mousedown", function(e=window.event) {
+        });
+        d3.select("#area-left").on("mousemove", function(e=window.event) {
+            e.preventDefault();
+        });
+        d3.select("#area-left").on("mouseup", function(e=window.event) {
+        });
+
+        var x1=10, y1=10, x2=100, y2=100;
+        var d = "M"+x1+","+y1+"L"+x2+","+y2;
+        d3.select("#area-left")
+            .append("path")
+            .attr("id", left_path_id_prefix + leftpath.length)
+            .attr("d", d)
+            .style("stroke", "#333")
+            .style("stroke-width", 1);
+    </script>
+</body>
