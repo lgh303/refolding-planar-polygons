@@ -46,23 +46,13 @@
             return s < 0 ? -1 : 1;
         }
 
-        // 判断自交
-        function if_intersect(points, new_point) {
-            var intersect = false;
-            if (points.length > 0) {
-                var last_point = points[points.length - 1];
-                for (var i = 0; i < points.length - 2; i++) {
-                    var f0 = to_left_test(points[i], points[i + 1], new_point);
-                    var f1 = to_left_test(points[i], points[i + 1], last_point);
-                    var f2 = to_left_test(last_point, new_point, points[i]);
-                    var f3 = to_left_test(last_point, new_point, points[i + 1]);
-                    if (f0 * f1 <= 0 && f2 * f3 <= 0) {
-                        intersect = true;
-                        console.log("intersect " + i);
-                    }
-                }
-            }
-            return intersect;
+        // 判断两条线段相交
+        function if_intersect(a, b, c, d) {
+            var f0 = to_left_test(a, b, c);
+            var f1 = to_left_test(a, b, d);
+            var f2 = to_left_test(c, d, a);
+            var f3 = to_left_test(c, d, b);
+            return (f0 * f1 <= 0 && f2 * f3 <= 0);
         }
 
         function add_new_point(prefix, points, params, cx, cy) {
@@ -92,7 +82,18 @@
             if (collision) return;
 
             // 判断自交
-            var intersect = if_intersect(points, [cx, cy]);
+            var intersect = false;
+            if (points.length > 0) {
+                var last_point = points[points.length - 1];
+                for (var i = 0; i < points.length - 2; i++) {
+                    if (if_intersect(points[i], points[i + 1], last_point, [cx, cy])) {
+                        intersect = true;
+                        console.log("intersect " + i);
+                        alert("intersect " + i);
+                        break;
+                    }
+                }
+            }
             if (intersect) return;
 
             // 画线
@@ -154,8 +155,28 @@
         d3.select("#area-left").on("mouseup", function(e=window.event) {
         });
 
-        $("#left-action-down").click(function(){
-            alert("down");
+        $("#left-action-done").click(function(){
+
+        });
+
+        $("#left-action-cancel").click(function(){
+            
+        });
+
+        $("#left-action-clear").click(function(){
+            
+        });
+
+        $("#right-action-done").click(function(){
+
+        });
+
+        $("#right-action-cancel").click(function(){
+            
+        });
+
+        $("#right-action-clear").click(function(){
+            
         });
     </script>
 </body>
