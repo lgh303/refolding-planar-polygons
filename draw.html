@@ -121,7 +121,7 @@
             points.push([cx, cy]);
         }
 
-        // 完成点击，判断封闭后是否自交
+        // 完成后点击，判断封闭后是否自交
         function polygon_done(prefix, points, params) {
             if (points.length < 3) {
                 console.log("at least 3 points");
@@ -150,6 +150,16 @@
                 .attr("d", d)
                 .style("stroke", "#333")
                 .style("stroke-width", 1);
+        }
+
+        // 清除所有点
+        function clear_all(prefix, points, params) {
+            for (var i = 0; i < points.length; i++) {
+                $("#" + prefix + "-circle-" + i).remove();
+                $("#" + prefix + "-path-" + i).remove();
+            }
+            params[0] = -1;
+            points.splice(0, points.length);
         }
 
         radius = 5;
@@ -196,7 +206,7 @@
         });
 
         $("#left-action-clear").click(function(){
-            
+            clear_all("left", leftpoints, leftparams);
         });
 
         $("#right-action-done").click(function(){
@@ -208,7 +218,7 @@
         });
 
         $("#right-action-clear").click(function(){
-            
+            clear_all("right", rightpoints, rightparams);
         });
     </script>
 </body>
