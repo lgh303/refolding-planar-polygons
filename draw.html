@@ -162,6 +162,18 @@
             points.splice(0, points.length);
         }
 
+        // 清除最后一个加入的点，Done 的情况下清除封闭线
+        function cancel_lastone(prefix, points, params) {
+            if($("#" + prefix + "-path-0").length) {
+                $("#" + prefix + "-path-0").remove();
+            }
+            var i = points.length - 1;
+            $("#" + prefix + "-circle-" + i).remove();
+            $("#" + prefix + "-path-" + i).remove();
+            points.pop();
+            if(params[0] == i) params[0] = -1;
+        }
+
         radius = 5;
         var leftpoints = [];
         var rightpoints = [];
@@ -202,7 +214,7 @@
         });
 
         $("#left-action-cancel").click(function(){
-            
+            cancel_lastone("left", leftpoints, leftparams);
         });
 
         $("#left-action-clear").click(function(){
@@ -214,7 +226,7 @@
         });
 
         $("#right-action-cancel").click(function(){
-            
+            cancel_lastone("right", rightpoints, rightparams);
         });
 
         $("#right-action-clear").click(function(){
