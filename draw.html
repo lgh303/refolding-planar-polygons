@@ -11,12 +11,14 @@
     <title>hehe</title>
 </head>
 <body>
-
+    <h4 id="info">&nbsp;</h4><br/>
     <button id="forceBegin">&lt;|</button>
     <button id="forcePrevious">&lt;</button>
     <button id="play">Play</button>
     <button id="forceNext">&gt;</button>
     <button id="forceEnd">&gt;|</button>
+    <button id="load">Load</button>
+    <button id="save">Save</button>
 
     <div id="draw">
         <div>
@@ -31,13 +33,14 @@
                 <button id="right-action-done">Done</button>
                 <button id="right-action-cancel">Cancel</button>
                 <button id="right-action-clear">Clear</button>
-                <button id="right-action-skeleton">Skeleton</button><br/>
+                <button id="right-action-skeleton" disabled="disabled">Skeleton</button><br/>
                 <svg id="area-right"></svg>
             </div>
         </div>
     </div>
 
     <!-- <link rel="stylesheet" href="test.css"> -->
+    <script src="/socket.io/socket.io.js"></script>
     <script src="jquery.min.js"></script>
     <script src="d3.min.js"></script>
 
@@ -82,7 +85,7 @@
 
             if (params["done"]) {
                 console.log("please click \"Cancel\" first");
-                alert("please click \"Cancel\" first");
+                $("#info").text("please click \"Cancel\" first");
                 return;
             }
 
@@ -94,7 +97,7 @@
                     if (if_intersect(points[i], points[i + 1], last_point, [cx, cy])) {
                         intersect = true;
                         console.log("intersect " + i);
-                        alert("intersect " + i);
+                        $("#info").text("intersect " + i);
                         break;
                     }
                 }
@@ -133,7 +136,7 @@
             }
             if (points.length < 3) {
                 console.log("at least 3 points");
-                alert("at least 3 points");
+                $("#info").text("at least 3 points");
                 return;
             }
             // 判断自交
@@ -144,7 +147,7 @@
                 if (if_intersect(points[i], points[i + 1], last_point, first_point)) {
                     intersect = true;
                     console.log("intersect " + i);
-                    alert("intersect " + i);
+                    $("#info").text("intersect " + i);
                     break;
                 }
             }
@@ -184,10 +187,11 @@
             points.pop();
         }
 
+        // 添加骨架限制
         function add_skeleton(prefix, points, params) {
             if (!params["done"]) {
                 console.log("please click \"Done\" first");
-                alert("please click \"Done\" first");
+                $("#info").text("please click \"Done\" first");
                 return;
             }
             var selected = []
@@ -199,7 +203,7 @@
             }
             if (selected.length != 2) {
                 console.log("skeleton needs exact 2 points");
-                alert("skeleton needs exact 2 points");
+                $("#info").text("skeleton needs exact 2 points");
                 return;
             }
             // 画骨架
@@ -218,12 +222,34 @@
             }
         }
 
+        // 生成json
+        function generate_json() {
+            var s_points = [];
+            $("#area-left").children("circle").each(function(){
+                s_points.push([parseFloat($(this).attr("cx")), parseFloat($(this).attr("cy"))]);
+            });
+            var t_points = [];
+            $("#area-right").children("circle").each(function(){
+                t_points.push([parseFloat($(this).attr("cx")), parseFloat($(this).attr("cy"))]);
+            });
+            var edge_constrains = [];
+            $("#area-left").children("path#left-skeleton").each(function(){
+                edge_constrains.push([parseInt($(this).attr("p0")), parseInt($(this).attr("p1"))]);
+            });
+            return {"s_points": s_points, "t_points": t_points, "edge_constrains": edge_constrains};
+        }
+
+        var socket = io();
         radius = 5;
         var leftpoints = [];
         var rightpoints = [];
         var leftparams = {"done": false};
         var rightparams = {"done": false};
         
+        socket.on("save_url", function(data){
+
+        });
+
         d3.select("#area-left")
             .attr("width", 540)
             .attr("height", 360)
@@ -258,15 +284,12 @@
         $("#left-action-done").click(function(){
             polygon_done("left", leftpoints, leftparams);
         });
-
         $("#left-action-cancel").click(function(){
             cancel_lastone("left", leftpoints, leftparams);
         });
-
         $("#left-action-clear").click(function(){
             clear_all("left", leftpoints, leftparams);
         });
-
         $("#left-action-skeleton").click(function(){
             add_skeleton("left", leftpoints, leftparams);
         });
@@ -276,17 +299,25 @@
         $("#right-action-done").click(function(){
             polygon_done("right", rightpoints, rightparams);
         });
-
         $("#right-action-cancel").click(function(){
             cancel_lastone("right", rightpoints, rightparams);
         });
-
         $("#right-action-clear").click(function(){
             clear_all("right", rightpoints, rightparams);
         });
-
         $("#right-action-skeleton").click(function(){
             add_skeleton("right", rightpoints, rightparams);
+        });
+
+
+
+        $("#load").click(function(){
+
+        });
+        $("#save").click(function(){
+            var filename = prompt("please enter file name","");
+            var d = generate_json();
+            socket.emit("save_json", d);
         });
     </script>
 </body>
