@@ -19,13 +19,19 @@
     <button id="forceEnd">&gt;|</button>
 
     <div id="draw">
-        <svg id="area-left"></svg>
-        <svg id="area-right"></svg>
-
-        <div id="draw-actions">
-            <button id="draw-action-done">Done</button>
-            <button id="draw-action-cancel">Cancel</button>
-            <button id="draw-action-clear">Clear</button>
+        <div>
+            <div style="float:left; margin-right:20px">
+                <button id="left-action-done">Done</button>
+                <button id="left-action-cancel">Cancel</button>
+                <button id="left-action-clear">Clear</button><br/>
+                <svg id="area-left"></svg>
+            </div>
+            <div style="float:left">
+                <button id="right-action-done">Done</button>
+                <button id="right-action-cancel">Cancel</button>
+                <button id="right-action-clear">Clear</button><br/>
+                <svg id="area-right"></svg>
+            </div>
         </div>
     </div>
 
@@ -34,39 +40,47 @@
     <script src="d3.min.js"></script>
 
     <script>
-        var leftpoint = [];
-        var rightpoint = [];
-        var leftpath = [];
-        var rightpath = [];
-        var radius = 5;
-        var selected = -1;
-        var left_circle_id_prefix = "left-circle-";
-        var left_path_id_prefix = "left-path-";
+        function to_left_test(a, b, c) {
+            var s = (a[0] - b[0]) * (c[1] - b[1]) - (a[1] - b[1]) * (c[0] - b[0]);
+            if (Math.abs(s) < 1e-5) return 0;
+            return s < 0 ? -1 : 1;
+        }
 
-        d3.select("#area-left")
-            .attr("width", 600)
-            .attr("height", 400)
-            .style("border", "1px solid");
-        d3.select("#area-right")
-            .attr("width", 600)
-            .attr("height", 400)
-            .style("border", "1px solid");
+        // 判断自交
+        function if_intersect(points, new_point) {
+            var intersect = false;
+            if (points.length > 0) {
+                var last_point = points[points.length - 1];
+                for (var i = 0; i < points.length - 2; i++) {
+                    var f0 = to_left_test(points[i], points[i + 1], new_point);
+                    var f1 = to_left_test(points[i], points[i + 1], last_point);
+                    var f2 = to_left_test(last_point, new_point, points[i]);
+                    var f3 = to_left_test(last_point, new_point, points[i + 1]);
+                    if (f0 * f1 <= 0 && f2 * f3 <= 0) {
+                        intersect = true;
+                        console.log("intersect " + i);
+                    }
+                }
+            }
+            return intersect;
+        }
 
-        d3.select("#area-left").on("click", function(e=window.event) {
-            var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-left").offset().left;
-            var cy = (e.pageY || e.clientY + document.body.scrollTop) - $("#area-left").offset().top;
+        function add_new_point(prefix, points, params, cx, cy) {
             console.log(cx, cy);
 
+            // 清除选中标记
+            if(params[0] != -1) {
+                d3.select("#" + prefix + "-circle-" + params[0])
+                .attr("fill", "black");
+            }
+
+            // 判断是否点在已经存在的点上
             var collision = false;
-            for(var i=0; i<leftpoint.length; i ++) {
-                var dist = (cx-leftpoint[i][0])**2 + (cy-leftpoint[i][1])**2;
+            for(var i=0; i<points.length; i ++) {
+                var dist = (cx-points[i][0])**2 + (cy-points[i][1])**2;
                 if(dist <= radius**2) {
-                    if(selected != -1) {
-                        d3.select("#" + left_circle_id_prefix + selected)
-                        .attr("fill", "black");
-                    }
-                    selected = i;
-                    d3.select("#" + left_circle_id_prefix + selected)
+                    params[0] = i;
+                    d3.select("#" + prefix + "-circle-" + params[0])
                         .transition()
                         .duration(100)
                         .attr("fill", "red");
@@ -75,17 +89,61 @@
                     break;
                 }
             }
+            if (collision) return;
 
-            if(!collision) {
-                selected = -1;
-                d3.select("#area-left")
-                    .append("circle")
-                    .attr("id", left_circle_id_prefix + leftpoint.length)
-                    .attr("cx", cx)
-                    .attr("cy", cy)
-                    .attr("r", radius);
-                leftpoint.push([cx, cy]);
+            // 判断自交
+            var intersect = if_intersect(points, [cx, cy]);
+            if (intersect) return;
+
+            // 画线
+            if (points.length > 0) {
+                var x1 = points[points.length - 1][0];
+                var y1 = points[points.length - 1][1];
+                var d = "M"+x1+","+y1+"L"+cx+","+cy;
+                d3.select("#area-" + prefix)
+                    .append("path")
+                    .attr("id", prefix + "-path-" + points.length)
+                    .attr("d", d)
+                    .style("stroke", "#333")
+                    .style("stroke-width", 1);
             }
+
+            // 画点
+            params[0] = -1;
+            d3.select("#area-" + prefix)
+                .append("circle")
+                .attr("id", prefix + "-circle-" + points.length)
+                .attr("cx", cx)
+                .attr("cy", cy)
+                .attr("r", radius);
+            points.push([cx, cy]);
+        }
+
+        radius = 5;
+        var leftpoints = [];
+        var rightpoints = [];
+        var leftparams = [-1];
+        var rightparams = [-1];
+        
+        d3.select("#area-left")
+            .attr("width", 540)
+            .attr("height", 360)
+            .style("border", "1px solid");
+        d3.select("#area-right")
+            .attr("width", 540)
+            .attr("height", 360)
+            .style("border", "1px solid");
+
+        d3.select("#area-left").on("click", function(e=window.event) {
+            var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-left").offset().left;
+            var cy = (e.pageY || e.clientY + document.body.scrollTop) - $("#area-left").offset().top;
+            add_new_point("left", leftpoints, leftparams, cx, cy);
+        });
+
+        d3.select("#area-right").on("click", function(e=window.event) {
+            var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-right").offset().left;
+            var cy = (e.pageY || e.clientY + document.body.scrollTop) - $("#area-right").offset().top;
+            add_new_point("right", rightpoints, rightparams, cx, cy);
         });
 
         d3.select("#area-left").on("mousedown", function(e=window.event) {
@@ -96,13 +154,8 @@
         d3.select("#area-left").on("mouseup", function(e=window.event) {
         });
 
-        var x1=10, y1=10, x2=100, y2=100;
-        var d = "M"+x1+","+y1+"L"+x2+","+y2;
-        d3.select("#area-left")
-            .append("path")
-            .attr("id", left_path_id_prefix + leftpath.length)
-            .attr("d", d)
-            .style("stroke", "#333")
-            .style("stroke-width", 1);
+        $("#left-action-down").click(function(){
+            alert("down");
+        });
     </script>
 </body>
