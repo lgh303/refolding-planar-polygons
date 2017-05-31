@@ -59,11 +59,6 @@
 
         // 加入一个新点
         function add_new_point(prefix, points, params, cx, cy) {
-            if (params["done"]) {
-                console.log("please click \"Cancel\" first");
-                alert("please click \"Cancel\" first");
-                return;
-            }
             console.log(cx, cy);
 
             // 判断是否点在已经存在的点上
@@ -82,6 +77,12 @@
                 color = (color == "red" ? "black" : "red");
                 d3.select("#" + prefix + "-circle-" + selected)
                     .attr("fill", color);
+                return;
+            }
+
+            if (params["done"]) {
+                console.log("please click \"Cancel\" first");
+                alert("please click \"Cancel\" first");
                 return;
             }
 
