@@ -40,8 +40,8 @@
     </div>
 
     <!-- <link rel="stylesheet" href="test.css"> -->
-    <script src="socket.io.js"></script>
-    <script src="jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/jquery/dist/jquery.min.js"></script>
     <script src="d3.min.js"></script>
 
     <script>
@@ -365,7 +365,7 @@
         var new_leftpoints, new_rightpoints;
         var leftparams = {"done": false};
         var rightparams = {"done": false};
-        var socket = io.connect('http://localhost:8000');
+        var socket = io();
         var isdragging = false;
 
         d3.select("#area-left").on("click", function(e=window.event) {
@@ -431,9 +431,22 @@
                 return;
             }
             var d = generate_json();
+            for (var i = 0; i < d.s_points.length; ++i) {
+                d.s_points[i][0] /= 54.0;
+                d.s_points[i][1] /= 36.0;
+                d.t_points[i][0] /= 54.0;
+                d.t_points[i][1] /= 36.0;
+            }
             socket.emit("run", d);
         });
         socket.on("run", function(data) {
+            for (var i = 0; i < data.s_points.length; ++i) {
+                data.s_points[i][0] *= 54.0;
+                data.s_points[i][1] *= 36.0;
+                data.t_points[i][0] *= 54.0;
+                data.t_points[i][1] *= 36.0;
+            }
+
             console.log(data);
             new_leftpoints = data["s_points"];
             new_rightpoints = data["t_points"];

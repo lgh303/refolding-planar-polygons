@@ -11,7 +11,7 @@ var utils = require('./utils')
 app.use(express.static(__dirname + '/public'))
 
 app.get('/', function(req, res) {
-    res.sendFile(__dirname + '/index.html')
+    res.sendFile(__dirname + '/draw.html')
 })
 
 const dataset = "leaf_plane"
@@ -43,10 +43,10 @@ function listening() {
     io.on('connection', function(client) {
         console.log('user on connection')
         client.emit('results', results)
-        client.on('refresh', function(message) {
+        client.on('run', function(client_data) {
             // re-calculate result data
-            var new_results = solver.energy_gd(data, status_save)
-            client.emit('results', new_results)
+            var new_results = solver.energy_gd(client_data, status_save)
+            client.emit('run', new_results[new_results.length - 1])
         })
     })
     server.listen(3000, function() {
