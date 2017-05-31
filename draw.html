@@ -24,13 +24,13 @@
                 <button id="left-action-done">Done</button>
                 <button id="left-action-cancel">Cancel</button>
                 <button id="left-action-clear">Clear</button><br/>
-                <svg id="area-left"></svg>
+                <svg id="area-left" style="width:540; height: 360; border: 1px solid;"></svg>
             </div>
             <div style="float:left">
                 <button id="right-action-done">Done</button>
                 <button id="right-action-cancel">Cancel</button>
                 <button id="right-action-clear">Clear</button><br/>
-                <svg id="area-right"></svg>
+                <svg id="area-right" style="width:540; height: 360; border: 1px solid;"></svg>
             </div>
         </div>
     </div>
@@ -69,6 +69,7 @@
             var collision = false;
             for(var i=0; i<points.length; i ++) {
                 var dist = (cx-points[i][0])**2 + (cy-points[i][1])**2;
+                console.log(dist, radius**2);
                 if(dist <= radius**2) {
                     params[0] = i;
                     d3.select("#" + prefix + "-circle-" + params[0])
@@ -119,6 +120,7 @@
                 .attr("cy", cy)
                 .attr("r", radius);
             points.push([cx, cy]);
+            console.log(points);
         }
 
         // 完成后点击，判断封闭后是否自交
@@ -150,6 +152,8 @@
                 .attr("d", d)
                 .style("stroke", "#333")
                 .style("stroke-width", 1);
+
+            console.log(points);
         }
 
         // 清除所有点
@@ -174,39 +178,123 @@
             if(params[0] == i) params[0] = -1;
         }
 
+        function register_drag_operation(area_id, prefix, points) {
+            var startx, starty, cx, cy;
+            var mousedown = false;
+            var index = -1;
+            d3.select("#" + area_id).on("mousedown", function(e=window.event) {
+                startx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#"+area_id).offset().left;
+                starty = (e.pageY || e.clientY + document.body.scrollTop) - $("#"+area_id).offset().top;
+                mousedown = true;
+                isdragging = false;
+                for(var i=0; i<points.length; i ++) {
+                    var dist = (startx-points[i][0])**2 + (starty-points[i][1])**2;
+                    if(dist <= radius**2) {
+                        index = i;
+                        break;
+                    }
+                }
+            });
+            d3.select("#" + area_id).on("mousemove", function(e=window.event) {
+                e.preventDefault();
+                isdragging = true;
+                if(mousedown && index > -1) {
+                    cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#"+area_id).offset().left;
+                    cy = (e.pageY || e.clientY + document.body.scrollTop) - $("#"+area_id).offset().top;
+                    // 更新当前点的位置
+                    d3.select("#" + prefix + "-circle-" + index)
+                        .attr("cx", cx)
+                        .attr("cy", cy);
+                    // 更新当前点的前边的位置
+                    var id = "#" + prefix + "-path-" + index;
+                    if($(id).length) {
+                        var d = d3.select(id).attr("d");
+                        d = d.substr(0, d.indexOf('L')+1) + cx + ',' + cy;
+                        d3.select(id).attr('d', d);
+                    }
+                    // 更新当前点的后边的位置
+                    id = "#" + prefix + "-path-" + ((index + 1) % points.length);
+                    if($(id).length) {
+                        var d = d3.select(id).attr("d");
+                        d = 'M' + cx + ',' + cy + d.substr(d.indexOf('L'));
+                        d3.select(id).attr('d', d);
+                    }
+                }
+            });
+            d3.select("#" + area_id).on("mouseup", function(e=window.event) {
+                // 判断自交
+                var intersect = false;
+                var n = points.length;
+                if (index > -1 && isdragging) {
+                    // 判断当前点的前边是否有自交
+                    var target = index;
+                    for (var i = 0; i < n; i++) {
+                        if (i!=target && (i+n-1)%n!=target && (i+1)%n!=target && $("#"+prefix+"-path-"+i).length && $("#"+prefix+"-path-"+target).length && if_intersect(points[(i+n-1)%n], points[i], points[(target+n-1)%n], [cx, cy])) {
+                            intersect = true;
+                            console.log(target, i);
+                            break;
+                        }
+                    }
+                    // 判断当前点的后边是否有自交
+                    if(!intersect) {
+                        target = (index+1)%n;
+                        for (var i = 0; i < n; i++) {
+                            if (i!=target && (i+n-1)%n!=target && (i+1)%n!=target && $("#"+prefix+"-path-"+i).length && $("#"+prefix+"-path-"+target).length && if_intersect(points[(i+n-1)%n], points[i], points[(target+n-1)%n], [cx, cy])) {
+                                intersect = true;
+                                console.log(target, i);
+                                break;
+                            }
+                        }
+                    }
+                    // 相交则恢复原来的位置
+                    if(intersect) {
+                        alert("intersect");
+                        d3.select("#" + prefix + "-circle-" + index).attr("cx", startx).attr("cy", starty);
+                        var id = "#" + prefix + "-path-" + index;
+                        if($(id).length) {
+                            var d = d3.select(id).attr("d");
+                            d = d.substr(0, d.indexOf('L')+1) + startx + ',' + starty;
+                            d3.select(id).attr('d', d);
+                        }
+                        id = "#" + prefix + "-path-" + ((index + 1) % points.length);
+                        if($(id).length) {
+                            var d = d3.select(id).attr("d");
+                            d = 'M' + startx + ',' + starty + d.substr(d.indexOf('L'));
+                            d3.select(id).attr('d', d);
+                        }
+                    }
+                    // 不相交则更新 points
+                    else {
+                        points[index] = [cx, cy];
+                    }
+                }
+                mousedown = false;
+                index = -1;
+            });
+        }
+
         radius = 5;
         var leftpoints = [];
         var rightpoints = [];
         var leftparams = [-1];
         var rightparams = [-1];
-        
-        d3.select("#area-left")
-            .attr("width", 540)
-            .attr("height", 360)
-            .style("border", "1px solid");
-        d3.select("#area-right")
-            .attr("width", 540)
-            .attr("height", 360)
-            .style("border", "1px solid");
+        var isdragging = false;
+
 
         d3.select("#area-left").on("click", function(e=window.event) {
             var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-left").offset().left;
             var cy = (e.pageY || e.clientY + document.body.scrollTop) - $("#area-left").offset().top;
-            add_new_point("left", leftpoints, leftparams, cx, cy);
+            if(!isdragging) {
+                add_new_point("left", leftpoints, leftparams, cx, cy);
+            }
         });
 
         d3.select("#area-right").on("click", function(e=window.event) {
             var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-right").offset().left;
             var cy = (e.pageY || e.clientY + document.body.scrollTop) - $("#area-right").offset().top;
-            add_new_point("right", rightpoints, rightparams, cx, cy);
-        });
-
-        d3.select("#area-left").on("mousedown", function(e=window.event) {
-        });
-        d3.select("#area-left").on("mousemove", function(e=window.event) {
-            e.preventDefault();
-        });
-        d3.select("#area-left").on("mouseup", function(e=window.event) {
+            if(!isdragging) {
+                add_new_point("right", rightpoints, rightparams, cx, cy);
+            }
         });
 
         $("#left-action-done").click(function(){
@@ -232,5 +320,9 @@
         $("#right-action-clear").click(function(){
             clear_all("right", rightpoints, rightparams);
         });
+
+
+        register_drag_operation("area-left", "left", leftpoints);
+        register_drag_operation("area-right", "right", rightpoints);
     </script>
 </body>
