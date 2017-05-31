@@ -14,7 +14,7 @@
     <h4 id="info">&nbsp;</h4><br/>
     <button id="forceBegin">&lt;|</button>
     <button id="forcePrevious">&lt;</button>
-    <button id="play">Play</button>
+    <button id="run">Run</button>
     <button id="forceNext">&gt;</button>
     <button id="forceEnd">&gt;|</button>
     <button id="load">Load</button>
@@ -40,7 +40,7 @@
     </div>
 
     <!-- <link rel="stylesheet" href="test.css"> -->
-    <!--<script src="/socket.io/socket.io.js"></script>-->
+    <script src="socket.io.js"></script>
     <script src="jquery.min.js"></script>
     <script src="d3.min.js"></script>
 
@@ -243,6 +243,27 @@
             return {"s_points": s_points, "t_points": t_points, "edge_constrains": edge_constrains};
         }
 
+        // 根据指定的 newpoints 更新所有点和边的位置
+        function update_positions(prefix, points, newpoints, duration) {
+            if(points.length != newpoints.length) {
+                console.log("Point number doesn't match.");
+                return;
+            }
+            var n = newpoints.length;
+            for(var i=0; i<n; i++) {
+                d3.select("#"+prefix+"-circle-"+i)
+                    .transition()
+                    .duration(duration)
+                    .attr('cx', newpoints[i][0])
+                    .attr('cy', newpoints[i][1]);
+                var d = "M"+newpoints[(i+n-1)%n][0]+","+newpoints[(i+n-1)%n][1]+"L"+newpoints[i][0]+","+newpoints[i][1];
+                d3.select("#"+prefix+"-path-"+i)
+                    .transition()
+                    .duration(duration)
+                    .attr('d', d);
+            }
+        }
+
         function register_drag_operation(area_id, prefix, points) {
             var startx, starty, cx, cy;
             var mousedown = false;
@@ -262,8 +283,8 @@
             });
             d3.select("#" + area_id).on("mousemove", function(e=window.event) {
                 e.preventDefault();
-                isdragging = true;
                 if(mousedown && index > -1) {
+                    isdragging = true;
                     cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#"+area_id).offset().left;
                     cy = (e.pageY || e.clientY + document.body.scrollTop) - $("#"+area_id).offset().top;
                     // 更新当前点的位置
@@ -341,19 +362,11 @@
         radius = 5;
         var leftpoints = [];
         var rightpoints = [];
+        var new_leftpoints, new_rightpoints;
         var leftparams = {"done": false};
         var rightparams = {"done": false};
-        //var socket = io();
+        var socket = io.connect('http://localhost:8000');
         var isdragging = false;
-
-        d3.select("#area-left")
-            .attr("width", 540)
-            .attr("height", 360)
-            .style("border", "1px solid");
-        d3.select("#area-right")
-            .attr("width", 540)
-            .attr("height", 360)
-            .style("border", "1px solid");
 
         d3.select("#area-left").on("click", function(e=window.event) {
             var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-left").offset().left;
@@ -410,6 +423,22 @@
             var filename = prompt("please enter file name","");
             var d = generate_json();
             socket.emit("save_json", d);
+        });
+
+        $("#run").click(function(){
+            if(leftpoints.length != rightpoints.length) {
+                alert("Points aren't matched.");
+                return;
+            }
+            var d = generate_json();
+            socket.emit("run", d);
+        });
+        socket.on("run", function(data) {
+            console.log(data);
+            new_leftpoints = data["s_points"];
+            new_rightpoints = data["t_points"];
+            update_positions("left", leftpoints, new_leftpoints, 100);
+            update_positions("right", rightpoints, new_rightpoints, 100)
         });
 
         register_drag_operation("area-left", "left", leftpoints);
