@@ -41,8 +41,8 @@
     </div>
 
     <!-- <link rel="stylesheet" href="test.css"> -->
-    <script src="socket.io.js"></script>
-    <script src="jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/jquery/dist/jquery.min.js"></script>
     <script src="d3.min.js"></script>
 
     <script>
@@ -186,12 +186,17 @@
             update_positions(prefix, points, points, 0);
             if($("#" + prefix + "-path-0").length) {
                 $("#" + prefix + "-path-0").remove();
-                return;
+            } else {
+                var i = points.length - 1;
+                $("#" + prefix + "-circle-" + i).remove();
+                $("#" + prefix + "-path-" + i).remove();
+                points.pop();
             }
-            var i = points.length - 1;
-            $("#" + prefix + "-circle-" + i).remove();
-            $("#" + prefix + "-path-" + i).remove();
-            points.pop();
+
+            params["skeleton"] = []
+            $("path#" + prefix + "-skeleton").each(function(){
+                $(this).remove();
+            });
         }
 
         // 添加骨架限制
@@ -217,6 +222,7 @@
             if (points.length > 0) {
                 var p = selected[0];
                 var q = selected[1];
+                params["skeleton"].push([p, q]);
                 var d = "M"+points[p][0]+","+points[p][1]+"L"+points[q][0]+","+points[q][1];
                 d3.select("#area-" + prefix)
                     .append("path")
@@ -230,7 +236,7 @@
         }
 
         // 生成json
-        function generate_json() {
+        function generate_json_from_view() {
             var s_points = [];
             $("#area-left").children("circle").each(function(){
                 s_points.push([parseFloat($(this).attr("cx")), parseFloat($(this).attr("cy"))]);
@@ -244,6 +250,9 @@
                 edge_constrains.push([parseInt($(this).attr("p0")), parseInt($(this).attr("p1"))]);
             });
             return {"s_points": s_points, "t_points": t_points, "edge_constrains": edge_constrains};
+        }
+        function generate_json_from_data(leftpoints, leftparams, rightpoints, rightparams) {
+            return {"s_points": leftpoints, "t_points": rightpoints, "edge_constrains": leftparams["skeleton"]};
         }
 
         // 根据指定的 newpoints 更新所有点和边的位置
@@ -365,10 +374,10 @@
         radius = 5;
         var leftpoints = [];
         var rightpoints = [];
+        var leftparams = {"done": false, "skeleton": []};
+        var rightparams = {"done": false, "skeleton": []};
         var new_leftpoints, new_rightpoints;
-        var leftparams = {"done": false};
-        var rightparams = {"done": false};
-        var socket = io.connect('http://localhost:8000');
+        var socket = io();
         var isdragging = false;
 
         d3.select("#area-left").on("click", function(e=window.event) {
@@ -424,19 +433,35 @@
         });
         $("#save").click(function(){
             var filename = prompt("please enter file name","");
-            var d = generate_json();
+            var d = generate_json_from_data(leftpoints, leftparams, rightpoints, rightparams);
+            console.log(JSON.stringify(d));
             socket.emit("save_json", d);
         });
+
+
 
         $("#run").click(function(){
             if(leftpoints.length != rightpoints.length) {
                 alert("Points aren't matched.");
                 return;
             }
-            var d = generate_json();
+            var d = generate_json_from_view();
+            for (var i = 0; i < d.s_points.length; ++i) {
+                d.s_points[i][0] /= 54.0;
+                d.s_points[i][1] /= 36.0;
+                d.t_points[i][0] /= 54.0;
+                d.t_points[i][1] /= 36.0;
+            }
             socket.emit("run", d);
         });
         socket.on("run", function(data) {
+            for (var i = 0; i < data.s_points.length; ++i) {
+                data.s_points[i][0] *= 54.0;
+                data.s_points[i][1] *= 36.0;
+                data.t_points[i][0] *= 54.0;
+                data.t_points[i][1] *= 36.0;
+            }
+
             console.log(data);
             new_leftpoints = data["s_points"];
             new_rightpoints = data["t_points"];

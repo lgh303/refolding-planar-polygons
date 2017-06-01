@@ -25,7 +25,8 @@
         [9, 8],
         [9.246, 2.005]
     ],
-    "constrains_idx": [
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+    "edge_constrains": [
+    ],
+    "no_edge_constrains": [
     ]
 }

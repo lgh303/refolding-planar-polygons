@@ -3,25 +3,29 @@ var sylvester = require('sylvester')
 var pcg = require("conjugate-gradient")
 var CSRMatrix = require("csr-matrix")
 
+var tools = require('./tools')
 var utils = require('./utils')
 var energy_gradient = utils.energy_gradient
 var energy_status = utils.energy_status
 
-const base_learning_rate = 0.03
-const max_iter = 400
-const THRESHOLD = 0.4
+const base_learning_rate = 0.04
+const max_iter = 200
+const THRESHOLD = 0.5
 const alpha = 0.2
 const gamma = 1.5
 
-function dist_gd(data, status_save) {
+function dist_gd(data, status_save, callback_draw) {
     var results = [data]
-    for (var i = 1; i < 20; i++) {
+    for (var i = 1; i < max_iter; i++) {
         var s_points = data["s_points"],
             t_points = data["t_points"]
         var dist_gradient = math.multiply(2, math.subtract(s_points, t_points))
         s_points = math.subtract(s_points, math.multiply(base_learning_rate, dist_gradient))
         data = {"s_points": s_points, "t_points": t_points}
         results.push(data)
+        if (callback_draw !== null) {
+            callback_draw(data)
+        }
     }
     return results
 }
@@ -57,61 +61,25 @@ function update_config_naive(config, D, G) {
     }
 }
 
-function calc_edge_constrains(constrains_idx, hp, lp) {
-    var N = lp.length
-    // constrains: list of l_i^2
-    var constrains = []
-    for (var i = 0; i < N; i++) {
-        if (constrains_idx[i] == 1) {
-            var lx = lp[i][0] - lp[(i+1)%N][0],
-                ly = lp[i][1] - lp[(i+1)%N][1],
-                hx = hp[i][0] - hp[(i+1)%N][0],
-                hy = hp[i][1] - hp[(i+1)%N][1]
-            var dx = (lx + hx) * 0.5, dy = (ly + hy) * 0.5
-            constrains.push(dx * dx + dy * dy)
-        } else {
-            constrains.push(-1)
-        }
-    }
-    return constrains
-}
-
-function calc_constrains_omega(config, edge_constrains, constrains_idx) {
-    var P = config.points
+function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs) {
+    var P = conf.points
     var N = P.length
-    var omegas = []
-    for (var i = 0; i < N; i++) {
-        if (constrains_idx[i] == 1) {
-            var diffX = P[i][0] - P[(i+1)%N][0],
-                diffY = P[i][1] - P[(i+1)%N][1]
-            omegas.push(diffX * diffX + diffY * diffY - edge_constrains[i])
-        }
-    }
-    return omegas
-}
-
-function update_config_with_constrains(config, D, G, edge_constrains, constrains_idx) {
-    var P = config.points
-    var N = P.length
-    var k_list = []
-    var i_constrains = 0
-    for (var i = 0; i < N; i++) {
-        if (constrains_idx[i] == 1) {
-            k_list.push([i_constrains, (2*i+0) % (2*N), 2 * (P[i][0] - P[(i+1)%N][0])])
-            k_list.push([i_constrains, (2*i+1) % (2*N), 2 * (P[i][1] - P[(i+1)%N][1])])
-            k_list.push([i_constrains, (2*i+2) % (2*N), 2 * (P[(i+1)%N][0] - P[i][0])])
-            k_list.push([i_constrains, (2*i+3) % (2*N), 2 * (P[(i+1)%N][1] - P[i][1])])
-            i_constrains = i_constrains + 1
-        }
+    var K_sparse = []
+    for (var k = 0; k < constrains_pairs.length; k++) {
+        var i = constrains_pairs[k][0], j = constrains_pairs[k][1]
+        K_sparse.push([k, (2*i+0) % (2*N), 2 * (P[i][0] - P[j][0])])
+        K_sparse.push([k, (2*i+1) % (2*N), 2 * (P[i][1] - P[j][1])])
+        K_sparse.push([k, (2*j+0) % (2*N), 2 * (P[j][0] - P[i][0])])
+        K_sparse.push([k, (2*j+1) % (2*N), 2 * (P[j][1] - P[i][1])])
     }
     
     for (var i = 0; i < 2 * N; i++) {
-        k_list.push([i_constrains, i, G[i]])
+        K_sparse.push([constrains_pairs.length, i, G[i]])
     }
-    var n_constrains = i_constrains + 1
-    var K = CSRMatrix.fromList(k_list, n_constrains, 2 * N).toDense()
-    var f = calc_constrains_omega(config, edge_constrains, constrains_idx)
-    f.push(gamma / alpha)
+    var n_constrains = constrains_pairs.length + 1
+    var K = CSRMatrix.fromList(K_sparse, n_constrains, 2 * N).toDense()
+    var f = utils.calc_constrains_omega(conf, l_conf, constrains_pairs)
+    f.push(gamma)
     K = $M(K)
     D = $V(D)
     f = $V(f)
@@ -120,23 +88,34 @@ function update_config_with_constrains(config, D, G, edge_constrains, constrains
     var b = K.x(D).add(f.x(alpha)).elements
     var l = $V(pcg(A, b))
     var proj_D = D.subtract(K.transpose().x(l)).elements
+    proj_D = tools.centered(proj_D)
 
     var move_amount = math.reshape(math.multiply(base_learning_rate, proj_D), [N, 2])
-    var candidate_points = math.add(config.points, move_amount),
+    var candidate_points = math.add(conf.points, move_amount),
         candidate_status = energy_status(candidate_points)
-    if (candidate_status.energy > config.status.energy) {
+    if (candidate_status.energy > conf.status.energy) {
         var move_amount_energy = math.reshape(math.multiply(base_learning_rate, G), [N, 2])
-        config.points = math.subtract(config.points, move_amount_energy)
+        conf.points = math.subtract(conf.points, move_amount_energy)
         console.log("follow G")
     } else {
-        config.points = candidate_points
+        conf.points = candidate_points
         console.log("follow proj_D")
     }
 }
 
-function energy_gd(data, status_save) {
+function energy_gd(data, status_save, callback_draw) {
     var results = [data]
-    var constrains_idx = data.constrains_idx
+    var edge_constrains_pairs = data.edge_constrains
+    if (edge_constrains_pairs === undefined) {
+        edge_constrains_pairs = []
+    }
+    var N = data.s_points.length
+    for (var i = 0; i < N; ++i) {
+        edge_constrains_pairs.push([i, (i + 1) % N])
+    }
+    edge_constrains_pairs = tools.unique_arr(edge_constrains_pairs)
+    console.log("edge_constrains_pairs: " + edge_constrains_pairs)
+    
     for (var i = 0; i < max_iter; i++) {
         console.log("Iteration " + i)
         var s_points = data.s_points, t_points = data.t_points
@@ -154,11 +133,11 @@ function energy_gd(data, status_save) {
         var D = math.flatten(math.multiply(-2, math.subtract(high_config.points, low_config.points)))
         var h_grad = math.flatten(high_config.status.energy_grad)
         var G = math.divide(h_grad, math.norm(h_grad))
-        // update_config_naive(high_config, D, G)
-        var edge_constrains = calc_edge_constrains(
-            constrains_idx,
-            high_config.points, low_config.points)
-        update_config_with_constrains(high_config, D, G, edge_constrains, constrains_idx)
+        if (edge_constrains_pairs.length === 0) {
+            update_config_naive(high_config, D, G)    
+        } else {
+            update_config_with_constrains(high_config, low_config, D, G, edge_constrains_pairs)
+        }
         
         if (high_config.label === 0) {
             s_points = high_config.points
@@ -174,6 +153,9 @@ function energy_gd(data, status_save) {
             "distance": status_save.distance,
         }
         results.push(data)
+        if (callback_draw !== null) {
+            callback_draw(data)
+        }
         if (status_save.distance < THRESHOLD) {
             break
         }

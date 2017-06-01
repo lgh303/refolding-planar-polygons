@@ -7,7 +7,7 @@ function euclid_distance(s_points, t_points) {
             diffY = s_points[i][1] - t_points[i][1]
         distance += diffX * diffX + diffY * diffY
     }
-    return distance
+    return distance / s_points.length
 }
 
 function energy_gradient(w, v, p) {
@@ -61,6 +61,24 @@ function status(data) {
     }
 }
 
+function calc_constrains_omega(h_conf, l_conf, constrains_pairs) {
+    var H = h_conf.points, L = l_conf.points
+    var N = H.length
+    var omegas = []
+    for (var k = 0; k < constrains_pairs.length; ++k) {
+        var i = constrains_pairs[k][0], j = constrains_pairs[k][1]
+        var lx = L[i][0] - L[j][0],
+            ly = L[i][1] - L[j][1],
+            hx = H[i][0] - H[j][0],
+            hy = H[i][1] - H[j][1]
+        var dx = lx, dy = ly
+        var l = dx * dx + dy * dy
+        omegas.push(hx * hx + hy * hy - l)
+    }
+    return omegas
+}
+
 exports.energy_gradient = energy_gradient
 exports.energy_status = energy_status
 exports.status = status
+exports.calc_constrains_omega = calc_constrains_omega

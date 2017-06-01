@@ -11,7 +11,7 @@ var save_results = function(data) {
     data["t_energy"] = status_save.t_status.energy
     data["distance"] = status_save.distance
 
-    var results = solver.energy_gd(data, status_save)
+    var results = solver.energy_gd(data, status_save, null)
 
     fs.writeFileSync("./data/" + dataset + "_results.json", JSON.stringify(results), "utf8", function(err) {
         if (err) {
