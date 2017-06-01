@@ -63,13 +63,12 @@
 
         // 加入一个新点
         function add_new_point(prefix, points, params, cx, cy) {
-            console.log(cx, cy);
+            // console.log(cx, cy);
 
             // 判断是否点在已经存在的点上
             var selected = -1;
             for(var i=0; i<points.length; i ++) {
                 var dist = (cx-points[i][0])**2 + (cy-points[i][1])**2;
-                console.log(dist, radius**2);
                 if(dist <= radius**2) {
                     selected = i;
                     break;
@@ -129,7 +128,7 @@
                 .attr("r", radius)
                 .attr("fill", "black");
             points.push([cx, cy]);
-            console.log(points);
+            // console.log(points);
         }
 
         // 完成后点击，判断封闭后是否自交
@@ -276,6 +275,36 @@
             }
         }
 
+        function start_animate_tracks(prefix, points, tracks, duration) {
+            var step = 0;
+            var waiting = false;
+            var wait_time = 1000;
+            function animate() {
+                if(tracks.length == 0) {
+                    console.error("No tracks.");
+                    return;
+                }
+                // 如果发现 step 超过了 tracks 的长度，有一次 waiting 的机会，等待 wait_time 再检测一次，如果依然没有更多的 tracks，则 stop。
+                if(step >= tracks.length) {
+                    if(waiting) {
+                        console.log("Stop.");
+                        return;
+                    }
+                    else {
+                        waiting = true;
+                        setTimeout(animate, wait_time);
+                        return;
+                    }
+                }
+                console.log("Play step", step);
+                update_positions(prefix, points, tracks[step], duration);
+                step += 1;
+                waiting = false;
+                setTimeout(animate, duration);
+            }
+            return animate;
+        }
+
         function register_drag_operation(area_id, prefix, points) {
             var startx, starty, cx, cy;
             var mousedown = false;
@@ -371,12 +400,13 @@
             });
         }
 
+
         radius = 5;
         var leftpoints = [];
         var rightpoints = [];
         var leftparams = {"done": false, "skeleton": []};
         var rightparams = {"done": false, "skeleton": []};
-        var new_leftpoints, new_rightpoints;
+        var left_tracks=[], right_tracks=[];
         var socket = io();
         var isdragging = false;
 
@@ -463,14 +493,20 @@
             }
 
             console.log(data);
-            new_leftpoints = data["s_points"];
-            new_rightpoints = data["t_points"];
-            update_positions("left", leftpoints, new_leftpoints, 100);
-            update_positions("right", rightpoints, new_rightpoints, 100)
+            // 将新来的位置push到tracks中
+            left_tracks.push(data["s_points"]);
+            right_tracks.push(data["t_points"]);
+            // 如果现在是第一个track，则调用函数开始animate过程
+            if(left_tracks.length == 1) {
+                start_animate_tracks("left", leftpoints, left_tracks, 100)();
+                start_animate_tracks("right", rightpoints, right_tracks, 100)();
+            }
         });
 
         $("#reset").click(function() {
-            new_leftpoints=[], new_rightpoints=[];
+            // 清空所有tracks，将位置恢复到原来
+            left_tracks.splice(0);
+            right_tracks.splice(0);
             update_positions("left", leftpoints, leftpoints, 0);
             update_positions("right", rightpoints, rightpoints, 0);
         });
