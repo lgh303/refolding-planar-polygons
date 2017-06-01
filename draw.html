@@ -15,6 +15,7 @@
     <button id="forceBegin">&lt;|</button>
     <button id="forcePrevious">&lt;</button>
     <button id="run">Run</button>
+    <button id="reset">Reset</button>
     <button id="forceNext">&gt;</button>
     <button id="forceEnd">&gt;|</button>
     <button id="load">Load</button>
@@ -181,6 +182,8 @@
         // 清除最后一个加入的点，Done 的情况下清除封闭线
         function cancel_lastone(prefix, points, params) {
             params["done"] = false;
+            // 恢复到 run 之前的位置先
+            update_positions(prefix, points, points, 0);
             if($("#" + prefix + "-path-0").length) {
                 $("#" + prefix + "-path-0").remove();
                 return;
@@ -439,6 +442,12 @@
             new_rightpoints = data["t_points"];
             update_positions("left", leftpoints, new_leftpoints, 100);
             update_positions("right", rightpoints, new_rightpoints, 100)
+        });
+
+        $("#reset").click(function() {
+            new_leftpoints=[], new_rightpoints=[];
+            update_positions("left", leftpoints, leftpoints, 0);
+            update_positions("right", rightpoints, rightpoints, 0);
         });
 
         register_drag_operation("area-left", "left", leftpoints);
