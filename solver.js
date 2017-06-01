@@ -8,15 +8,15 @@ var utils = require('./utils')
 var energy_gradient = utils.energy_gradient
 var energy_status = utils.energy_status
 
-const base_learning_rate = 0.03
+const base_learning_rate = 0.04
 const max_iter = 200
-const THRESHOLD = 0.4
+const THRESHOLD = 0.5
 const alpha = 0.2
 const gamma = 1.5
 
 function dist_gd(data, status_save) {
     var results = [data]
-    for (var i = 1; i < 20; i++) {
+    for (var i = 1; i < max_iter; i++) {
         var s_points = data["s_points"],
             t_points = data["t_points"]
         var dist_gradient = math.multiply(2, math.subtract(s_points, t_points))
@@ -76,7 +76,7 @@ function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs) {
     var n_constrains = constrains_pairs.length + 1
     var K = CSRMatrix.fromList(K_sparse, n_constrains, 2 * N).toDense()
     var f = utils.calc_constrains_omega(conf, l_conf, constrains_pairs)
-    f.push(gamma / alpha)
+    f.push(gamma)
     K = $M(K)
     D = $V(D)
     f = $V(f)
@@ -85,6 +85,7 @@ function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs) {
     var b = K.x(D).add(f.x(alpha)).elements
     var l = $V(pcg(A, b))
     var proj_D = D.subtract(K.transpose().x(l)).elements
+    proj_D = tools.centered(proj_D)
 
     var move_amount = math.reshape(math.multiply(base_learning_rate, proj_D), [N, 2])
     var candidate_points = math.add(conf.points, move_amount),
@@ -129,8 +130,11 @@ function energy_gd(data, status_save) {
         var D = math.flatten(math.multiply(-2, math.subtract(high_config.points, low_config.points)))
         var h_grad = math.flatten(high_config.status.energy_grad)
         var G = math.divide(h_grad, math.norm(h_grad))
-        // update_config_naive(high_config, D, G)
-        update_config_with_constrains(high_config, low_config, D, G, edge_constrains_pairs)
+        if (edge_constrains_pairs.length === 0) {
+            update_config_naive(high_config, D, G)    
+        } else {
+            update_config_with_constrains(high_config, low_config, D, G, edge_constrains_pairs)
+        }
         
         if (high_config.label === 0) {
             s_points = high_config.points

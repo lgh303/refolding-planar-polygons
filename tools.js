@@ -31,4 +31,19 @@ function unique_arr(arr) {
     return ret
 }
 
+function centered(vec) {
+    var mean = [0, 0]
+    for (var i = 0; i < vec.length; ++i) {
+        mean[i % 2] += vec[i]
+    }
+    mean[0] = mean[0] / (vec.length * 0.5)
+    mean[1] = mean[1] / (vec.length * 0.5)
+    var ret = []
+    for (var i = 0; i < vec.length; ++i) {
+        ret.push(vec[i] - mean[i % 2])
+    }
+    return ret
+}
+
 exports.unique_arr = unique_arr
+exports.centered = centered
