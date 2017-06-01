@@ -44,16 +44,15 @@ function listening() {
         console.log('user on connection')
         client.emit('results', results)
         client.on('run', function(client_data) {
-            var new_results = solver.energy_gd(client_data, status_save)
-            console.log(new_results)
-            client.emit('run', new_results[new_results.length - 1])
+            var new_results = solver.energy_gd(client_data, status_save, function(frame) {
+                client.emit('run', frame)
+            })
         })
         // for test
-        client.on("refresh", function(message) {
-            var new_results = solver.energy_gd(data, status_save)
+        client.on('refresh', function(message) {
+            var new_results = solver.energy_gd(data, status_save, null)
             client.emit('results', new_results)
         })
-            
     })
     server.listen(3000, function() {
         console.log('Listening on 3000...')

@@ -14,7 +14,7 @@ const THRESHOLD = 0.5
 const alpha = 0.2
 const gamma = 1.5
 
-function dist_gd(data, status_save) {
+function dist_gd(data, status_save, callback_draw) {
     var results = [data]
     for (var i = 1; i < max_iter; i++) {
         var s_points = data["s_points"],
@@ -23,6 +23,9 @@ function dist_gd(data, status_save) {
         s_points = math.subtract(s_points, math.multiply(base_learning_rate, dist_gradient))
         data = {"s_points": s_points, "t_points": t_points}
         results.push(data)
+        if (callback_draw !== null) {
+            callback_draw(data)
+        }
     }
     return results
 }
@@ -100,7 +103,7 @@ function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs) {
     }
 }
 
-function energy_gd(data, status_save) {
+function energy_gd(data, status_save, callback_draw) {
     var results = [data]
     var edge_constrains_pairs = data.edge_constrains
     if (edge_constrains_pairs === undefined) {
@@ -150,6 +153,9 @@ function energy_gd(data, status_save) {
             "distance": status_save.distance,
         }
         results.push(data)
+        if (callback_draw !== null) {
+            callback_draw(data)
+        }
         if (status_save.distance < THRESHOLD) {
             break
         }
