@@ -20,26 +20,29 @@
     <button id="forceEnd">&gt;|</button>
     <button id="load">Load</button>
     <button id="save">Save</button>
-
-    <div id="draw">
-        <div>
-            <div style="float:left; margin-right:20px">
-                <button id="left-action-done">Done</button>
-                <button id="left-action-cancel">Cancel</button>
-                <button id="left-action-clear">Clear</button>
-                <button id="left-action-skeleton">Skeleton</button><br/>
-                <svg id="area-left" style="width:540; height: 360; border: 1px solid;"></svg>
-            </div>
-            <div style="float:left">
-                <button id="right-action-done">Done</button>
-                <button id="right-action-cancel">Cancel</button>
-                <button id="right-action-clear">Clear</button>
-                <button id="right-action-skeleton" disabled="disabled">Skeleton</button><br/>
-                <svg id="area-right" style="width:540; height: 360; border: 1px solid;"></svg>
-            </div>
-        </div>
+    <div>
+    Learning Rate: <input type="number" placeholder=1.0>
     </div>
-
+    <div>
+        <div style="float:left; margin-right:20px">
+            <button id="left-action-done">Done</button>
+            <button id="left-action-cancel">Cancel</button>
+            <button id="left-action-clear">Clear</button>
+            <button id="left-action-skeleton">Skeleton</button><br/>
+            <svg id="area-left" style="width:540; height: 360; border: 1px solid;"></svg>
+        </div>
+        <div style="float:left">
+            <button id="right-action-done">Done</button>
+            <button id="right-action-cancel">Cancel</button>
+            <button id="right-action-clear">Clear</button>
+            <button id="right-action-skeleton" disabled="disabled">Skeleton</button><br/>
+            <svg id="area-right" style="width:540; height: 360; border: 1px solid;"></svg>
+        </div>
+    </div></br>
+    <div>
+        <button id="display">Display</button></br>
+        <svg id="area-display" style="width:540; height: 360; border: 1px solid;"></svg>
+    </div>
     <!-- <link rel="stylesheet" href="test.css"> -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/jquery/dist/jquery.min.js"></script>
@@ -275,10 +278,12 @@
             }
         }
 
-        function start_animate_tracks(prefix, points, tracks, duration) {
+        function start_animate_tracks(prefix, points, tracks, duration, wait_time=1000, stopfunc=function(){
+            $("#display").prop("disabled", false);
+        }) {
             var step = 0;
             var waiting = false;
-            var wait_time = 1000;
+            $("#info").text("Running.......");
             function animate() {
                 if(tracks.length == 0) {
                     console.error("No tracks.");
@@ -287,7 +292,9 @@
                 // 如果发现 step 超过了 tracks 的长度，有一次 waiting 的机会，等待 wait_time 再检测一次，如果依然没有更多的 tracks，则 stop。
                 if(step >= tracks.length) {
                     if(waiting) {
-                        console.log("Stop.");
+                        console.log(prefix, "Stop.");
+                        $("#info").text("Completed!");
+                        stopfunc();
                         return;
                     }
                     else {
@@ -296,7 +303,7 @@
                         return;
                     }
                 }
-                console.log("Play step", step);
+                console.log(prefix, "Play step", step);
                 update_positions(prefix, points, tracks[step], duration);
                 step += 1;
                 waiting = false;
@@ -475,6 +482,8 @@
                 alert("Points aren't matched.");
                 return;
             }
+            left_tracks.splice(0);
+            right_tracks.splice(0);
             var d = generate_json_from_view();
             for (var i = 0; i < d.s_points.length; ++i) {
                 d.s_points[i][0] /= 54.0;
@@ -482,6 +491,7 @@
                 d.t_points[i][0] /= 54.0;
                 d.t_points[i][1] /= 36.0;
             }
+            $("#display").prop("disabled", true);
             socket.emit("run", d);
         });
         socket.on("run", function(data) {
@@ -492,12 +502,12 @@
                 data.t_points[i][1] *= 36.0;
             }
 
-            console.log(data);
+            // console.log(data);
             // 将新来的位置push到tracks中
             left_tracks.push(data["s_points"]);
             right_tracks.push(data["t_points"]);
-            // 如果现在是第一个track，则调用函数开始animate过程
-            if(left_tracks.length == 1) {
+            // 如果现在是第5个track，则调用函数开始animate过程
+            if(left_tracks.length == 5) {
                 start_animate_tracks("left", leftpoints, left_tracks, 100)();
                 start_animate_tracks("right", rightpoints, right_tracks, 100)();
             }
@@ -509,6 +519,24 @@
             right_tracks.splice(0);
             update_positions("left", leftpoints, leftpoints, 0);
             update_positions("right", rightpoints, rightpoints, 0);
+        });
+
+        $("#display").click(function() {
+            $("#area-display").html('');
+            var prefix="display";
+            var duration=10;
+            var n = leftpoints.length;
+            for(var i=0; i<n; i++) {
+                d3.select("#area-" + prefix).append("circle").attr("id", prefix + "-circle-" + i).attr("cx", leftpoints[i][0]).attr("cy", leftpoints[i][1]).attr("r", radius).attr("fill", "black");
+                var d = "M"+leftpoints[(i+n-1)%n][0]+","+leftpoints[(i+n-1)%n][1]+"L"+leftpoints[i][0]+","+leftpoints[i][1];
+                d3.select("#area-"+prefix).append("path").attr("id", prefix+"-path-"+i).attr("d", d).style("stroke", "#333").style("stroke-width", 1);
+            }
+            var tracks = $.extend([], left_tracks);
+            var tmp = $.extend([], right_tracks);
+            tmp.reverse();
+            tracks = tracks.concat(tmp);
+            $("#display").prop("disabled", true);
+            start_animate_tracks(prefix, leftpoints, tracks, duration, 0)();
         });
 
         register_drag_operation("area-left", "left", leftpoints);
