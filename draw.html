@@ -532,7 +532,7 @@
         $("#display").click(function() {
             $("#area-display").html('');
             var prefix="display";
-            var duration=10;
+            var duration=50;
             var n = leftpoints.length;
             for(var i=0; i<n; i++) {
                 d3.select("#area-" + prefix).append("circle").attr("id", prefix + "-circle-" + i).attr("cx", leftpoints[i][0]).attr("cy", leftpoints[i][1]).attr("r", radius).attr("fill", "black");

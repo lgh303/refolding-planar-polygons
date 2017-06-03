@@ -14,7 +14,7 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/draw.html')
 })
 
-const dataset = "leaf_plane"
+const dataset = "hook"
 
 var data = null
 var status_save = null
@@ -44,7 +44,7 @@ function listening() {
         console.log('user on connection')
         client.emit('results', results)
         client.on('run', function(client_data) {
-            var new_results = solver.energy_gd(client_data, status_save, function(frame) {
+            var new_results = solver.energy_gd(client_data, function(frame) {
                 client.emit('run', frame)
             })
         })
