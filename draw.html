@@ -23,21 +23,24 @@
     <a id='download'> </a>
 
     <div>
-    Learning Rate: <input type="number" placeholder=1.0>
+    Learning Rate: <input type="number" placeholder=1.0><br/>
+    distance: <label id="label-distance"></label>
     </div>
     <div>
         <div style="float:left; margin-right:20px">
             <button id="left-action-done">Done</button>
             <button id="left-action-cancel">Cancel</button>
             <button id="left-action-clear">Clear</button>
-            <button id="left-action-skeleton">Skeleton</button><br/>
+            <button id="left-action-skeleton">Skeleton</button>
+            s_energy: <label id="label-s-energy"></label><br/>
             <svg id="area-left" style="width:540; height: 360; border: 1px solid;"></svg>
         </div>
         <div style="float:left">
             <button id="right-action-done">Done</button>
             <button id="right-action-cancel">Cancel</button>
             <button id="right-action-clear">Clear</button>
-            <button id="right-action-skeleton" disabled="disabled">Skeleton</button><br/>
+            <button id="right-action-skeleton" disabled="disabled">Skeleton</button>
+            t_energy: <label id="label-t-energy"></label><br/>
             <svg id="area-right" style="width:540; height: 360; border: 1px solid;"></svg>
         </div>
     </div></br>
@@ -53,7 +56,7 @@
     <script>
         function to_left_test(a, b, c) {
             var s = (a[0] - b[0]) * (c[1] - b[1]) - (a[1] - b[1]) * (c[0] - b[0]);
-            if (Math.abs(s) < 1e-5) return 0;
+            if (Math.abs(s) < 1e-8) return 0;
             return s < 0 ? -1 : 1;
         }
 
@@ -160,7 +163,7 @@
             }
             if (intersect) return;
 
-            params["done"] = true
+            params["done"] = true;
             // 画封闭线
             var d = "M"+last_point[0]+","+last_point[1]+"L"+first_point[0]+","+first_point[1];
             d3.select("#area-" + prefix)
@@ -173,21 +176,25 @@
             console.log(points);
         }
 
-        // 清除所有点
+        // 清除所有点以及 skeleton
         function clear_all(prefix, points, params) {
             params["done"] = false;
             for (var i = 0; i < points.length; i++) {
                 $("#" + prefix + "-circle-" + i).remove();
                 $("#" + prefix + "-path-" + i).remove();
             }
+            for (var i = 0; i < params["skeleton"].length; i ++) {
+                $("#" + prefix + "-skeleton-" + params["skeleton"][i][0] + "-" + params["skeleton"][i][1]).remove();
+            }
             points.splice(0, points.length);
+            params["skeleton"].splice(0, params["skeleton"].length);
         }
 
         // 清除最后一个加入的点，Done 的情况下清除封闭线
         function cancel_lastone(prefix, points, params) {
             params["done"] = false;
             // 恢复到 run 之前的位置先
-            update_positions(prefix, points, points, 0);
+            update_positions(prefix, points, points, params, 0);
             if($("#" + prefix + "-path-0").length) {
                 $("#" + prefix + "-path-0").remove();
             } else {
@@ -230,9 +237,7 @@
                 var d = "M"+points[p][0]+","+points[p][1]+"L"+points[q][0]+","+points[q][1];
                 d3.select("#area-" + prefix)
                     .append("path")
-                    .attr("id", prefix + "-skeleton")
-                    .attr("p0", p)
-                    .attr("p1", q)
+                    .attr("id", prefix+"-skeleton-"+p+"-"+q)
                     .attr("d", d)
                     .style("stroke", "blue")
                     .style("stroke-width", 2);
@@ -250,9 +255,8 @@
                 t_points.push([parseFloat($(this).attr("cx")), parseFloat($(this).attr("cy"))]);
             });
             var edge_constrains = [];
-            $("#area-left").children("path#left-skeleton").each(function(){
-                edge_constrains.push([parseInt($(this).attr("p0")), parseInt($(this).attr("p1"))]);
-            });
+            // sjx change: 使用 leftparams 来获取 edge_constrains
+            edge_constrains = leftparams["skeleton"]
             return {"s_points": s_points, "t_points": t_points, "edge_constrains": edge_constrains};
         }
         function generate_json_from_data(leftpoints, leftparams, rightpoints, rightparams) {
@@ -260,7 +264,7 @@
         }
 
         // 根据指定的 newpoints 更新所有点和边的位置
-        function update_positions(prefix, points, newpoints, duration) {
+        function update_positions(prefix, points, newpoints, params, duration) {
             if(points.length != newpoints.length) {
                 console.log("Point number doesn't match.");
                 return;
@@ -278,10 +282,20 @@
                     .duration(duration)
                     .attr('d', d);
             }
+            // sjx: 更新 skeleton
+            for (var i = 0; i < params["skeleton"].length; i ++) {
+                var p0=params["skeleton"][i][0], p1=params["skeleton"][i][1];
+                var d="M"+newpoints[p0][0]+","+newpoints[p0][1]+"L"+newpoints[p1][0]+","+newpoints[p1][1];
+                d3.select("#"+prefix+"-skeleton-"+p0+"-"+p1)
+                    .transition()
+                    .duration(duration)
+                    .attr('d', d);
+            }
         }
 
-        function start_animate_tracks(prefix, points, tracks, duration, wait_time=1000, stopfunc=function(){
+        function start_animate_tracks(prefix, points, params, tracks, duration, show_info=false, wait_time=1000, stopfunc=function(){
             $("#display").prop("disabled", false);
+            $("#run").prop("disabled", false);
         }) {
             var step = 0;
             var waiting = false;
@@ -289,6 +303,7 @@
             function animate() {
                 if(tracks.length == 0) {
                     console.error("No tracks.");
+                    stopfunc();
                     return;
                 }
                 // 如果发现 step 超过了 tracks 的长度，有一次 waiting 的机会，等待 wait_time 再检测一次，如果依然没有更多的 tracks，则 stop。
@@ -306,7 +321,12 @@
                     }
                 }
                 console.log(prefix, "Play step", step);
-                update_positions(prefix, points, tracks[step], duration);
+                update_positions(prefix, points, tracks[step], params, duration);
+                if(show_info) {
+                    $("#label-distance").html(info_store[step]["distance"]);
+                    $("#label-s-energy").html(info_store[step]["s_energy"]);
+                    $("#label-t-energy").html(info_store[step]["t_energy"]);
+                }
                 step += 1;
                 waiting = false;
                 setTimeout(animate, duration);
@@ -314,7 +334,7 @@
             return animate;
         }
 
-        function register_drag_operation(area_id, prefix, points) {
+        function register_drag_operation(area_id, prefix, points, params) {
             var startx, starty, cx, cy;
             var mousedown = false;
             var index = -1;
@@ -354,6 +374,17 @@
                         var d = d3.select(id).attr("d");
                         d = 'M' + cx + ',' + cy + d.substr(d.indexOf('L'));
                         d3.select(id).attr('d', d);
+                    }
+                    // sjx: 更新与当前点相关的skeleton的位置
+                    for (var i = 0; i < params["skeleton"].length; i ++) {
+                        var p0=params["skeleton"][i][0], p1=params["skeleton"][i][1];
+                        if(p0 == index || p1 == index) {
+                            var d;
+                            if(p0 == index) d="M"+cx+","+cy+"L"+points[p1][0]+","+points[p1][1];
+                            if(p1 == index) d="M"+points[p0][0]+","+points[p0][1]+"L"+cx+","+cy;
+                            d3.select("#"+prefix+"-skeleton-"+p0+"-"+p1)
+                                .attr('d', d);
+                        }
                     }
                 }
             });
@@ -416,6 +447,7 @@
         var leftparams = {"done": false, "skeleton": []};
         var rightparams = {"done": false, "skeleton": []};
         var left_tracks=[], right_tracks=[];
+        var info_store=[];
         var socket = io();
         var isdragging = false;
 
@@ -500,6 +532,7 @@
                 d.t_points[i][1] /= 36.0;
             }
             $("#display").prop("disabled", true);
+            $("#run").prop("disabled", true);
             socket.emit("run", d);
         });
         socket.on("run", function(data) {
@@ -514,10 +547,11 @@
             // 将新来的位置push到tracks中
             left_tracks.push(data["s_points"]);
             right_tracks.push(data["t_points"]);
+            info_store.push(data);
             // 如果现在是第5个track，则调用函数开始animate过程
             if(left_tracks.length == 5) {
-                start_animate_tracks("left", leftpoints, left_tracks, 100)();
-                start_animate_tracks("right", rightpoints, right_tracks, 100)();
+                start_animate_tracks("left", leftpoints, leftparams, left_tracks, 100, true)();
+                start_animate_tracks("right", rightpoints, rightparams, right_tracks, 100)();
             }
         });
 
@@ -525,8 +559,8 @@
             // 清空所有tracks，将位置恢复到原来
             left_tracks.splice(0);
             right_tracks.splice(0);
-            update_positions("left", leftpoints, leftpoints, 0);
-            update_positions("right", rightpoints, rightpoints, 0);
+            update_positions("left", leftpoints, leftpoints, leftparams, 0);
+            update_positions("right", rightpoints, rightpoints, rightparams, 0);
         });
 
         $("#display").click(function() {
@@ -539,15 +573,22 @@
                 var d = "M"+leftpoints[(i+n-1)%n][0]+","+leftpoints[(i+n-1)%n][1]+"L"+leftpoints[i][0]+","+leftpoints[i][1];
                 d3.select("#area-"+prefix).append("path").attr("id", prefix+"-path-"+i).attr("d", d).style("stroke", "#333").style("stroke-width", 1);
             }
+            for(var i=0; i<leftparams["skeleton"].length; i ++) {
+                var p0=leftparams["skeleton"][i][0], p1=leftparams["skeleton"][i][1];
+                var d = "M"+leftpoints[p0][0]+","+leftpoints[p0][1]+"L"+leftpoints[p1][0]+","+leftpoints[p1][1];
+                d3.select("#area-"+prefix).append("path").attr("id", prefix+"-skeleton-"+p0+"-"+p1).attr("d", d).style("stroke", "blue").style("stroke-width", 2);
+            }
             var tracks = $.extend([], left_tracks);
             var tmp = $.extend([], right_tracks);
             tmp.reverse();
             tracks = tracks.concat(tmp);
+            tracks.push(rightpoints);
             $("#display").prop("disabled", true);
-            start_animate_tracks(prefix, leftpoints, tracks, duration, 0)();
+            $("#run").prop("disabled", true);
+            start_animate_tracks(prefix, leftpoints, leftparams, tracks, duration, 0)();
         });
 
-        register_drag_operation("area-left", "left", leftpoints);
-        register_drag_operation("area-right", "right", rightpoints);
+        register_drag_operation("area-left", "left", leftpoints, leftparams);
+        register_drag_operation("area-right", "right", rightpoints, rightparams);
     </script>
 </body>
