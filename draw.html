@@ -18,8 +18,9 @@
     <button id="reset">Reset</button>
     <button id="forceNext">&gt;</button>
     <button id="forceEnd">&gt;|</button>
-    <button id="load">Load</button>
     <button id="save">Save</button>
+    <button id="load">Load</button>
+    <a id='download'> </a>
 
     <div id="draw">
         <div>
@@ -464,8 +465,14 @@
         $("#save").click(function(){
             var filename = prompt("please enter file name","");
             var d = generate_json_from_data(leftpoints, leftparams, rightpoints, rightparams);
-            console.log(JSON.stringify(d));
-            socket.emit("save_json", d);
+            socket.emit("save", {"json": d, "filename": filename});
+        });
+        socket.on("save", function(data){
+            var filepath = data["filepath"];
+            var filename = data["filename"]
+            $("a#download").attr("href", filepath);
+            $("a#download").attr("download", filename);
+            document.getElementById("download").click();
         });
 
 

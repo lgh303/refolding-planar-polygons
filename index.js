@@ -53,8 +53,47 @@ function listening() {
             var new_results = solver.energy_gd(data, status_save, null)
             client.emit('results', new_results)
         })
+        
+        client.on('save', function(data){
+            var filename = data["filename"]
+            var json = data["json"]
+            var filepath = '/upload/' + filename + '.json'
+            /*var date = new Date();
+            var t = date.getTime();*/
+            fs.writeFile('.' + filepath, JSON.stringify(json), function(err){
+                if (err) {
+                    console.log('写文件错误')
+                } else {
+                    client.emit('save', {"filepath": filepath, "filename": filename})
+                }
+            })
+        })
     })
     server.listen(3000, function() {
         console.log('Listening on 3000...')
     })
 }
+
+
+// 动态文件访问
+app.use(express.static(__dirname + '/upload'))
+app.get('/upload/:name', function (req, res, next) {
+  var options = {
+    root: __dirname + '/upload/',
+    dotfiles: 'deny',
+    headers: {
+        'x-timestamp': Date.now(),
+        'x-sent': true
+    }
+  };
+  var fileName = req.params.name;
+  res.sendFile(fileName, options, function (err) {
+    if (err) {
+      console.log(err);
+      res.status(err.status).end();
+    }
+    else {
+      console.log('Sent:', fileName);
+    }
+  });
+})
