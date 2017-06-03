@@ -10,7 +10,7 @@ var energy_status = utils.energy_status
 
 const base_learning_rate = 0.04
 const max_iter = 200
-const THRESHOLD = 0.5
+const THRESHOLD = 0.001
 const alpha = 0.2
 const gamma = 1.5
 
@@ -36,7 +36,6 @@ function update_config_naive(config, D, G) {
     if (math.dot(D, G) > 0) {
         proj_D = math.subtract(D, math.multiply(math.dot(D, G),  G))
     }
-    
     var move_amount = math.reshape(math.multiply(base_learning_rate, proj_D), [N, 2])
     var candidate_points = math.add(config.points, move_amount),
         candidate_status = energy_status(candidate_points)
@@ -103,18 +102,21 @@ function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs) {
     }
 }
 
-function energy_gd(data, status_save, callback_draw) {
+function energy_gd(data, callback_draw) {
+    var status_save = utils.status(data)
+    data["s_energy"] = status_save.s_status.energy
+    data["t_energy"] = status_save.t_status.energy
+    data["distance"] = status_save.distance
     var results = [data]
     var edge_constrains_pairs = data.edge_constrains
     if (edge_constrains_pairs === undefined) {
         edge_constrains_pairs = []
     }
     var N = data.s_points.length
-    for (var i = 0; i < N; ++i) {
-        edge_constrains_pairs.push([i, (i + 1) % N])
-    }
+    // for (var i = 0; i < N; ++i) {
+    //     edge_constrains_pairs.push([i, (i + 1) % N])
+    // }
     edge_constrains_pairs = tools.unique_arr(edge_constrains_pairs)
-    console.log("edge_constrains_pairs: " + edge_constrains_pairs)
     
     for (var i = 0; i < max_iter; i++) {
         console.log("Iteration " + i)
@@ -138,7 +140,6 @@ function energy_gd(data, status_save, callback_draw) {
         } else {
             update_config_with_constrains(high_config, low_config, D, G, edge_constrains_pairs)
         }
-        
         if (high_config.label === 0) {
             s_points = high_config.points
         } else {
@@ -152,6 +153,9 @@ function energy_gd(data, status_save, callback_draw) {
             "t_energy": status_save.t_status.energy,
             "distance": status_save.distance,
         }
+        console.log("s_energy: " + status_save.s_status.energy.toPrecision(4) +
+                    "; t_energy: " + status_save.t_status.energy.toPrecision(4) +
+                    "; distance: " + status_save.distance.toPrecision(4))
         results.push(data)
         if (callback_draw !== null) {
             callback_draw(data)
