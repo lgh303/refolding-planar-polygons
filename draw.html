@@ -482,6 +482,11 @@
             polygon_done("left", leftpoints, leftparams);
             polygon_done("right", rightpoints, rightparams);
             for (var i in e) add_skeleton("left", leftpoints, leftparams, e[i][0], e[i][1]);
+            // lgh changes
+            if (json["iteration"]) $("input#iteration").val(json["iteration"]);
+            if (json["threshold"]) $("input#threshold").val(json["threshold"]);
+            if (json["alpha"]) $("input#alpha").val(json["alpha"]);
+            if (json["gamma"]) $("input#gamma").val(json["gamma"]);
         }
 
 

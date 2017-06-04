@@ -48,7 +48,7 @@ function centered(vec) {
     return ret
 }
 
-function scale_json(name, scalex, scaley) {
+function scale_json(name, scalex, scaley, transx, transy) {
     fs.readFile("./data/" + name + ".json", "utf8", function(err, json_data) {
         if (err) {
             throw err
@@ -56,10 +56,10 @@ function scale_json(name, scalex, scaley) {
         data = JSON.parse(json_data)
         N = data.s_points.length
         for (var i = 0; i < N; ++i) {
-            data.s_points[i][0] = data.s_points[i][0] * scalex
-            data.s_points[i][1] = data.s_points[i][1] * scaley
-            data.t_points[i][0] = data.t_points[i][0] * scalex
-            data.t_points[i][1] = data.t_points[i][1] * scaley
+            data.s_points[i][0] = data.s_points[i][0] * scalex + transx
+            data.s_points[i][1] = data.s_points[i][1] * scaley + transy
+            data.t_points[i][0] = data.t_points[i][0] * scalex + transx
+            data.t_points[i][1] = data.t_points[i][1] * scaley + transy
         }
         fs.writeFile("./data/" + name + "_large.json", JSON.stringify(data), function(err) {
             if (err) {
