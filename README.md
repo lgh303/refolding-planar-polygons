@@ -6,9 +6,10 @@ Powered by [node.js]
 
 ## installation
 
-* install the node.js packages
+* install the node.js packages and npm
 ```sh
 $ npm install
+$ npm install -g nodemon
 ```
 
 Start server using nodemon

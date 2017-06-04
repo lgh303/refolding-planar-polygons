@@ -9,10 +9,10 @@ var energy_gradient = utils.energy_gradient
 var energy_status = utils.energy_status
 
 const base_learning_rate = 0.04
-const max_iter = 2000
-const THRESHOLD = 0.001
-const alpha = 0.2
-const gamma = 1.5
+const default_max_iter = 400
+const default_threshold = 0.005
+const default_alpha = 0.15
+const default_gamma = 1.5
 
 function dist_gd(data, status_save, callback_draw) {
     var results = [data]
@@ -60,7 +60,8 @@ function update_config_naive(config, D, G) {
     }
 }
 
-function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs) {
+function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs,
+                                       alpha, gamma) {
     var P = conf.points
     var N = P.length
     var K_sparse = []
@@ -107,6 +108,10 @@ function energy_gd(data, callback_draw) {
     data["s_energy"] = status_save.s_status.energy
     data["t_energy"] = status_save.t_status.energy
     data["distance"] = status_save.distance
+    var max_iter = data["iteration"] || default_max_iter
+    var threshold = data["threshold"] || default_threshold
+    var alpha = data["alpha"] || default_alpha
+    var gamma = data["gamma"] || default_gamma
     var results = [data]
     var edge_constrains_pairs = data.edge_constrains
     if (edge_constrains_pairs === undefined) {
@@ -138,7 +143,8 @@ function energy_gd(data, callback_draw) {
         if (edge_constrains_pairs.length === 0) {
             update_config_naive(high_config, D, G)    
         } else {
-            update_config_with_constrains(high_config, low_config, D, G, edge_constrains_pairs)
+            update_config_with_constrains(high_config, low_config, D, G,
+                                          edge_constrains_pairs, alpha, gamma)
         }
         if (high_config.label === 0) {
             s_points = high_config.points
@@ -160,7 +166,7 @@ function energy_gd(data, callback_draw) {
         if (callback_draw !== null) {
             callback_draw(data)
         }
-        if (status_save.distance < THRESHOLD) {
+        if (status_save.distance < threshold) {
             break
         }
     }

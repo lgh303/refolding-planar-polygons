@@ -34,7 +34,7 @@
     <div>
         <div style="float:left; display:inline; margin-right:20px">
             <button id="left-action-done">Enclose</button>
-            <button id="left-action-cancel">Cancel</button>
+            <button id="left-action-cancel">Undo</button>
             <button id="left-action-clear">Clear</button>
             <button id="left-action-skeleton">Skeleton</button>
             s_energy: <label id="label-s-energy"></label><br/>
@@ -42,9 +42,8 @@
         </div>
         <div style="display:inline; ">
             <button id="right-action-done">Enclose</button>
-            <button id="right-action-cancel">Cancel</button>
+            <button id="right-action-cancel">Undo</button>
             <button id="right-action-clear">Clear</button>
-            <button id="right-action-skeleton" disabled="disabled">Skeleton</button>
             t_energy: <label id="label-t-energy"></label><br/>
             <svg id="area-right" style="width:540; height: 360; border: 1px solid;"></svg>
         </div>
@@ -61,7 +60,13 @@
     <script>
         function to_left_test(a, b, c) {
             var s = (a[0] - b[0]) * (c[1] - b[1]) - (a[1] - b[1]) * (c[0] - b[0]);
-            if (Math.abs(s) < 1e-8) return 0;
+            if (Math.abs(s) < 1e-5) return 0;
+            return s < 0 ? -1 : 1;
+        }
+
+        function dot(a, b, c) {
+            var s = (a[0] - b[0]) * (c[0] - b[0]) + (a[1] - b[1]) * (c[1] - b[1]);
+            if (Math.abs(s) < 1e-5) return 0;
             return s < 0 ? -1 : 1;
         }
 
@@ -71,7 +76,13 @@
             var f1 = to_left_test(a, b, d);
             var f2 = to_left_test(c, d, a);
             var f3 = to_left_test(c, d, b);
-            return (f0 * f1 <= 0 && f2 * f3 <= 0);
+            if (f0 * f1 > 0 || f2 * f3 > 0) return false;
+            if (f0 * f1 < 0 && f2 * f3 < 0) return true;
+            if (f0 == 0 && dot(a, c, b) <= 0) return true;
+            if (f1 == 0 && dot(a, d, b) <= 0) return true;
+            if (f2 == 0 && dot(c, a, d) <= 0) return true;
+            if (f3 == 0 && dot(c, b, d) <= 0) return true;
+            return false;
         }
 
         // 加入一个新点
@@ -315,7 +326,6 @@
         }) {
             var step = 0;
             var waiting = false;
-            $("#info").text("Running.......");
             function animate() {
                 if(tracks.length == 0) {
                     console.error("No tracks.");
@@ -336,6 +346,7 @@
                         return;
                     }
                 }
+                $("#info").text("Running step" + step);
                 console.log(prefix, "Play step", step);
                 update_positions(prefix, points, tracks[step], params, duration);
                 if(show_info) {
@@ -471,6 +482,11 @@
             polygon_done("left", leftpoints, leftparams);
             polygon_done("right", rightpoints, rightparams);
             for (var i in e) add_skeleton("left", leftpoints, leftparams, e[i][0], e[i][1]);
+            // lgh changes
+            if (json["iteration"]) $("input#iteration").val(json["iteration"]);
+            if (json["threshold"]) $("input#threshold").val(json["threshold"]);
+            if (json["alpha"]) $("input#alpha").val(json["alpha"]);
+            if (json["gamma"]) $("input#gamma").val(json["gamma"]);
         }
 
 
@@ -543,6 +559,7 @@
 
 
         $("#load").click(function(){
+            $("#run").prop("disabled", false);
             var filename = $("#select").val();
             socket.emit("load", filename);
         });
