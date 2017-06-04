@@ -9,7 +9,7 @@ var energy_gradient = utils.energy_gradient
 var energy_status = utils.energy_status
 
 const base_learning_rate = 0.04
-const max_iter = 500
+const max_iter = 2000
 const THRESHOLD = 0.001
 const alpha = 0.2
 const gamma = 1.5
