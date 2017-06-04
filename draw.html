@@ -326,7 +326,6 @@
         }) {
             var step = 0;
             var waiting = false;
-            $("#info").text("Running.......");
             function animate() {
                 if(tracks.length == 0) {
                     console.error("No tracks.");
@@ -347,6 +346,7 @@
                         return;
                     }
                 }
+                $("#info").text("Running step" + step);
                 console.log(prefix, "Play step", step);
                 update_positions(prefix, points, tracks[step], params, duration);
                 if(show_info) {
@@ -554,6 +554,7 @@
 
 
         $("#load").click(function(){
+            $("#run").prop("disabled", false);
             var filename = $("#select").val();
             socket.emit("load", filename);
         });
