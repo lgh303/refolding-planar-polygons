@@ -76,13 +76,13 @@
             var f1 = to_left_test(a, b, d);
             var f2 = to_left_test(c, d, a);
             var f3 = to_left_test(c, d, b);
-            if (f0 * f1 < 0 && f2 * f3 < 0) return true;
             if (f0 * f1 > 0 || f2 * f3 > 0) return false;
-            if (f0 == 0 && dot(a, c, b) <= 0) return false;
-            if (f1 == 0 && dot(a, d, b) <= 0) return false;
-            if (f2 == 0 && dot(c, a, d) <= 0) return false;
-            if (f3 == 0 && dot(c, b, d) <= 0) return false;
-            return true;
+            if (f0 * f1 < 0 && f2 * f3 < 0) return true;
+            if (f0 == 0 && dot(a, c, b) <= 0) return true;
+            if (f1 == 0 && dot(a, d, b) <= 0) return true;
+            if (f2 == 0 && dot(c, a, d) <= 0) return true;
+            if (f3 == 0 && dot(c, b, d) <= 0) return true;
+            return false;
         }
 
         // 加入一个新点
