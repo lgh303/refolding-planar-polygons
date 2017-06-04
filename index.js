@@ -20,6 +20,12 @@ const dataset = "hook"
 var data = null
 var status_save = null
 var results = null
+
+mkdirp("./upload/", function(err) {
+    if (err) {
+        console.log("Error making dir: " + err)
+    }
+})
 // fs.readFile("./data/" + dataset + ".json", "utf8", function(err, json_data) {
 //     if (err) {
 //         throw err
@@ -61,17 +67,12 @@ function listening() {
             var filepath = '/upload/' + filename + '.json'
             /*var date = new Date();
               var t = date.getTime();*/
-            mkdirp('./upload/', function(err) {
+            fs.writeFile('.' + filepath, JSON.stringify(json), function(err){
                 if (err) {
-                    console.log("Error making dir: " + err)
+                    console.log('Error writing file: ' + err)
+                } else {
+                    client.emit('save', {"filepath": filepath, "filename": filename})
                 }
-                fs.writeFile('.' + filepath, JSON.stringify(json), function(err){
-                    if (err) {
-                        console.log('Error writing file: ' + err)
-                    } else {
-                        client.emit('save', {"filepath": filepath, "filename": filename})
-                    }
-                })
             })
         })
 
