@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>report.md—/Users/sjx/Desktop/study/phd/计算几何/refolding-planar-polygons/docs</title>
+    <style type="text/css">
+    html{font-family: sans-serif;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%}body{margin: 0}article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display: block}audio,canvas,progress,video{display: inline-block;vertical-align: baseline}audio:not([controls]){display: none;height: 0}[hidden],template{display: none}a{background: transparent}a:active,a:hover{outline: 0}abbr[title]{border-bottom: 1px dotted}b,strong{font-weight: bold}dfn{font-style: italic}h1{font-size: 2em;margin: 0.67em 0}mark{background: #ff0;color: #000}small{font-size: 80%}sub,sup{font-size: 75%;line-height: 0;position: relative;vertical-align: baseline}sup{top: -0.5em}sub{bottom: -0.25em}img{border: 0}svg:not(:root){overflow: hidden}figure{margin: 1em 40px}hr{box-sizing: content-box;height: 0}pre{overflow: auto}code,kbd,pre,samp{font-family: monospace, monospace;font-size: 1em}button,input,optgroup,select,textarea{color: inherit;font: inherit;margin: 0}button{overflow: visible}button,select{text-transform: none}button,html input[type="button"],input[type="reset"],input[type="submit"]{-webkit-appearance: button;cursor: pointer}button[disabled],html input[disabled]{cursor: default}button::-moz-focus-inner,input::-moz-focus-inner{border: 0;padding: 0}input{line-height: normal}input[type="checkbox"],input[type="radio"]{box-sizing: border-box;padding: 0}input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{height: auto}input[type="search"]{-webkit-appearance: textfield;box-sizing: content-box}input[type="search"]::-webkit-search-cancel-button,input[type="search"]::-webkit-search-decoration{-webkit-appearance: none}fieldset{border: 1px solid #c0c0c0;margin: 0 2px;padding: 0.35em 0.625em 0.75em}legend{border: 0;padding: 0}textarea{overflow: auto}optgroup{font-weight: bold}table{border-collapse: collapse;border-spacing: 0}td,th{padding: 0}*{box-sizing: border-box}input,select,textarea,button{font: 13px/1.4 Helvetica, arial, freesans, clean, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"}body{min-width: 1020px;font: 13px/1.4 Helvetica, arial, freesans, clean, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";color: #333;background-color: #fff}a{color: #4183c4;text-decoration: none}a:hover,a:active{text-decoration: underline}hr,.rule{height: 0;margin: 15px 0;overflow: hidden;background: transparent;border: 0;border-bottom: 1px solid #ddd}hr:before,.rule:before{display: table;content: ""}hr:after,.rule:after{display: table;clear: both;content: ""}h1,h2,h3,h4,h5,h6{margin-top: 15px;margin-bottom: 15px;line-height: 1.1}h1{font-size: 30px}h2{font-size: 21px}h3{font-size: 16px}h4{font-size: 14px}h5{font-size: 12px}h6{font-size: 11px}small{font-size: 90%}blockquote{margin: 0}.lead{margin-bottom: 30px;font-size: 20px;font-weight: 300;color: #555}.text-muted{color: #999}.text-danger{color: #bd2c00}.text-emphasized{font-weight: bold;color: #333}ul,ol{padding: 0;margin-top: 0;margin-bottom: 0}ol ol,ul ol{list-style-type: lower-roman}ul ul ol,ul ol ol,ol ul ol,ol ol ol{list-style-type: lower-alpha}dd{margin-left: 0}tt,code{font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;font-size: 12px}pre{margin-top: 0;margin-bottom: 0;font: 12px Consolas, "Liberation Mono", Menlo, Courier, monospace}#realtime .status{overflow: visible;position: absolute;top: -5px;left: 0;background: url("/public/images/github-status.png");width: 26px;height: 26px;display: block;margin: 0 5px 0 0}#realtime .up{background-position: 0 0}#realtime .problem{background-position: 0 -53px}#realtime .down{background-position: 0 -26px}.container{max-width: 920px;margin: 0 auto 20px auto}#header{background: #FAFAFA;background: -moz-linear-gradient(#FAFAFA, #EAEAEA);background: -webkit-linear-gradient(#FAFAFA, #EAEAEA);-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#fafafa', endColorstr='#eaeaea')";border-bottom: 1px solid #CACACA;box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4),0 0 10px rgba(0, 0, 0, 0.1)}#markup{padding: 3px}#markup article{padding-top: 30px}.markdown-body{overflow: hidden;font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;font-size: 16px;line-height: 1.6;word-wrap: break-word}.markdown-body>*:first-child{margin-top: 0 !important}.markdown-body>*:last-child{margin-bottom: 0 !important}.markdown-body .absent{color: #c00}.markdown-body .anchor{position: absolute;top: 0;left: 0;display: block;padding-right: 6px;padding-left: 30px;margin-left: -30px}.markdown-body .anchor:focus{outline: none}.markdown-body h1,.markdown-body h2,.markdown-body h3,.markdown-body h4,.markdown-body h5,.markdown-body h6{position: relative;margin-top: 1em;margin-bottom: 16px;font-weight: bold;line-height: 1.4}.markdown-body h1 .octicon-link,.markdown-body h2 .octicon-link,.markdown-body h3 .octicon-link,.markdown-body h4 .octicon-link,.markdown-body h5 .octicon-link,.markdown-body h6 .octicon-link{display: none;color: #000;vertical-align: middle}.markdown-body h1:hover .anchor,.markdown-body h2:hover .anchor,.markdown-body h3:hover .anchor,.markdown-body h4:hover .anchor,.markdown-body h5:hover .anchor,.markdown-body h6:hover .anchor{padding-left: 8px;margin-left: -30px;text-decoration: none}.markdown-body h1:hover .anchor .octicon-link,.markdown-body h2:hover .anchor .octicon-link,.markdown-body h3:hover .anchor .octicon-link,.markdown-body h4:hover .anchor .octicon-link,.markdown-body h5:hover .anchor .octicon-link,.markdown-body h6:hover .anchor .octicon-link{display: inline-block}.markdown-body h1 tt,.markdown-body h1 code,.markdown-body h2 tt,.markdown-body h2 code,.markdown-body h3 tt,.markdown-body h3 code,.markdown-body h4 tt,.markdown-body h4 code,.markdown-body h5 tt,.markdown-body h5 code,.markdown-body h6 tt,.markdown-body h6 code{font-size: inherit}.markdown-body h1{padding-bottom: 0.3em;font-size: 2.25em;line-height: 1.2;border-bottom: 1px solid #eee}.markdown-body h1 .anchor{line-height: 1}.markdown-body h2{padding-bottom: 0.3em;font-size: 1.75em;line-height: 1.225;border-bottom: 1px solid #eee}.markdown-body h2 .anchor{line-height: 1}.markdown-body h3{font-size: 1.5em;line-height: 1.43}.markdown-body h3 .anchor{line-height: 1.2}.markdown-body h4{font-size: 1.25em}.markdown-body h4 .anchor{line-height: 1.2}.markdown-body h5{font-size: 1em}.markdown-body h5 .anchor{line-height: 1.1}.markdown-body h6{font-size: 1em;color: #777}.markdown-body h6 .anchor{line-height: 1.1}.markdown-body p,.markdown-body blockquote,.markdown-body ul,.markdown-body ol,.markdown-body dl,.markdown-body table,.markdown-body pre{margin-top: 0;margin-bottom: 16px}.markdown-body hr{height: 4px;padding: 0;margin: 16px 0;background-color: #e7e7e7;border: 0 none}.markdown-body ul,.markdown-body ol{padding-left: 2em}.markdown-body ul.no-list,.markdown-body ol.no-list{padding: 0;list-style-type: none}.markdown-body ul ul,.markdown-body ul ol,.markdown-body ol ol,.markdown-body ol ul{margin-top: 0;margin-bottom: 0}.markdown-body li>p{margin-top: 16px}.markdown-body dl{padding: 0}.markdown-body dl dt{padding: 0;margin-top: 16px;font-size: 1em;font-style: italic;font-weight: bold}.markdown-body dl dd{padding: 0 16px;margin-bottom: 16px}.markdown-body blockquote{padding: 0 15px;color: #777;border-left: 4px solid #ddd}.markdown-body blockquote>:first-child{margin-top: 0}.markdown-body blockquote>:last-child{margin-bottom: 0}.markdown-body table{display: block;width: 100%;overflow: auto;word-break: normal;word-break: keep-all}.markdown-body table th{font-weight: bold}.markdown-body table th,.markdown-body table td{padding: 6px 13px;border: 1px solid #ddd}.markdown-body table tr{background-color: #fff;border-top: 1px solid #ccc}.markdown-body table tr:nth-child(2n){background-color: #f8f8f8}.markdown-body img{max-width: 100%;box-sizing: border-box}.markdown-body span.frame{display: block;overflow: hidden}.markdown-body span.frame>span{display: block;float: left;width: auto;padding: 7px;margin: 13px 0 0;overflow: hidden;border: 1px solid #ddd}.markdown-body span.frame span img{display: block;float: left}.markdown-body span.frame span span{display: block;padding: 5px 0 0;clear: both;color: #333}.markdown-body span.align-center{display: block;overflow: hidden;clear: both}.markdown-body span.align-center>span{display: block;margin: 13px auto 0;overflow: hidden;text-align: center}.markdown-body span.align-center span img{margin: 0 auto;text-align: center}.markdown-body span.align-right{display: block;overflow: hidden;clear: both}.markdown-body span.align-right>span{display: block;margin: 13px 0 0;overflow: hidden;text-align: right}.markdown-body span.align-right span img{margin: 0;text-align: right}.markdown-body span.float-left{display: block;float: left;margin-right: 13px;overflow: hidden}.markdown-body span.float-left span{margin: 13px 0 0}.markdown-body span.float-right{display: block;float: right;margin-left: 13px;overflow: hidden}.markdown-body span.float-right>span{display: block;margin: 13px auto 0;overflow: hidden;text-align: right}.markdown-body code,.markdown-body tt{padding: 0;padding-top: 0.2em;padding-bottom: 0.2em;margin: 0;font-size: 85%;background-color: rgba(0,0,0,0.04);border-radius: 3px}.markdown-body code:before,.markdown-body code:after,.markdown-body tt:before,.markdown-body tt:after{letter-spacing: -0.2em;content: "\00a0"}.markdown-body code br,.markdown-body tt br{display: none}.markdown-body del code{text-decoration: inherit}.markdown-body pre>code{padding: 0;margin: 0;font-size: 100%;word-break: normal;white-space: pre;background: transparent;border: 0}.markdown-body .highlight{margin-bottom: 16px}.markdown-body .highlight pre,.markdown-body pre{padding: 16px;overflow: auto;font-size: 85%;line-height: 1.45;background-color: #f7f7f7;border-radius: 3px}.markdown-body .highlight pre{margin-bottom: 0;word-break: normal}.markdown-body pre{word-wrap: normal}.markdown-body pre code,.markdown-body pre tt{display: inline;max-width: initial;padding: 0;margin: 0;overflow: initial;line-height: inherit;word-wrap: normal;background-color: transparent;border: 0}.markdown-body pre code:before,.markdown-body pre code:after,.markdown-body pre tt:before,.markdown-body pre tt:after{content: normal}.markdown-body kbd{display: inline-block;padding: 3px 5px;font-size: 11px;line-height: 10px;color: #555;vertical-align: middle;background-color: #fcfcfc;border: solid 1px #ccc;border-bottom-color: #bbb;border-radius: 3px;box-shadow: inset 0 -1px 0 #bbb}.codehilite{background: #ffffff}.codehilite .c{color: #999988;font-style: italic}.codehilite .err{color: #a61717;background-color: #e3d2d2}.codehilite .k{color: #000000;font-weight: bold}.codehilite .o{color: #000000;font-weight: bold}.codehilite .cm{color: #999988;font-style: italic}.codehilite .cp{color: #999999;font-weight: bold}.codehilite .c1{color: #999988;font-style: italic}.codehilite .cs{color: #999999;font-weight: bold;font-style: italic}.codehilite .gd{color: #000000;background-color: #ffdddd}.codehilite .gd .x{color: #000000;background-color: #ffaaaa}.codehilite .ge{color: #000000;font-style: italic}.codehilite .gr{color: #aa0000}.codehilite .gh{color: #999999}.codehilite .gi{color: #000000;background-color: #ddffdd}.codehilite .gi .x{color: #000000;background-color: #aaffaa}.codehilite .go{color: #888888}.codehilite .gp{color: #555555}.codehilite .gs{font-weight: bold}.codehilite .gu{color: #aaaaaa}.codehilite .gt{color: #aa0000}.codehilite .kc{color: #000000;font-weight: bold}.codehilite .kd{color: #000000;font-weight: bold}.codehilite .kp{color: #000000;font-weight: bold}.codehilite .kr{color: #000000;font-weight: bold}.codehilite .kt{color: #445588;font-weight: bold}.codehilite .m{color: #009999}.codehilite .s{color: #d14}.codehilite .na{color: #008080}.codehilite .nb{color: #0086B3}.codehilite .nc{color: #445588;font-weight: bold}.codehilite .no{color: #008080}.codehilite .ni{color: #800080}.codehilite .ne{color: #990000;font-weight: bold}.codehilite .nf{color: #990000;font-weight: bold}.codehilite .nn{color: #555555}.codehilite .nt{color: #000080}.codehilite .nv{color: #008080}.codehilite .ow{color: #000000;font-weight: bold}.codehilite .w{color: #bbbbbb}.codehilite .mf{color: #009999}.codehilite .mh{color: #009999}.codehilite .mi{color: #009999}.codehilite .mo{color: #009999}.codehilite .sb{color: #d14}.codehilite .sc{color: #d14}.codehilite .sd{color: #d14}.codehilite .s2{color: #d14}.codehilite .se{color: #d14}.codehilite .sh{color: #d14}.codehilite .si{color: #d14}.codehilite .sx{color: #d14}.codehilite .sr{color: #009926}.codehilite .s1{color: #d14}.codehilite .ss{color: #990073}.codehilite .bp{color: #999999}.codehilite .vc{color: #008080}.codehilite .vg{color: #008080}.codehilite .vi{color: #008080}.codehilite .il{color: #009999}
+    </style>
+    <style type="text/css">
+      .markdown-body hr{background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBNYWNpbnRvc2giIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OENDRjNBN0E2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OENDRjNBN0I2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo4Q0NGM0E3ODY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo4Q0NGM0E3OTY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqqezsUAAAAfSURBVHjaYmRABcYwBiM2QSA4y4hNEKYDQxAEAAIMAHNGAzhkPOlYAAAAAElFTkSuQmCC")}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="markup">
+        <article id="content" class="markdown-body">
+          <h3>问题描述</h3>
+<p>动画的渐变效果是动画制作与处理过程中的一个重要问题。如果我们将动画中的一些物体的框架用不自交的多边形来描述，动画的渐变过程可以看作是两个不自交多边形互相转化的过程。值得注意的是，在这个问题中，我们可以向其中加入一些约束限制。首先一个必须要保证的约束是在多边形连续变化的过程中不能产生自交现象，另一个要考虑的约束是对多边形点和边的一些限制（如：保持某条线段长度不变，保持某个角大小不变等），实际效果如下图所示。</p>
+<p>在传统的解决方案里，比如一些插值类算法，往往很难做到以上两点，尤其是针对复杂的非凸多边形的情况。因此Hayley N. Iben et al. 提出了一种新的算法，与传统方法不同的是，该算法定义了每个多边形的能量函数，对于给定的一个起始多边形和终止多边形，找到一个能量函数最低的多边形作为中间结果，分别迭代计算两个多边形过渡到中间多边形的渐变过程，每次迭代时找到使能量函数和两个多边形的某种距离测度不升的方向，从而逐渐变化到中间结果。最后的形变过程就是由起始多边形到中间多边形的形变过程和终止多边形到中间多边形的反向形变过程组成。该方法的好处是将这种形变过程看作是一个优化问题，从而便于将约束变成一些量化的优化问题的约束条件来处理。</p>
+<p>我们组将参考Refolding Planar Polygons这篇论文的内容，复现了本论文中针对复杂多边形渐变这个算法，并进行了简单的效果演示。</p>
+<hr>
+<h3>算法描述</h3>
+<p>我们主要实现了论文[1]中描述的基于能量梯度下降的算法。
+首先要说明的是平面上简单多边形渐变的存在性，[2]中的理论分析指出，任何平面简单多边形都可以连续展开成一个凸多边形，而且保持过程中的边的长度不变，保持边不相交。因此任何两个兼容的平面简单多边形都可以通过先展开成凸多边形的方式实现连续不自交的渐变过程，这至少说明了问题解的存在性。但是我们实现的算法希望能够以最“直接”、“自然”的方式完成渐变过程。</p>
+<p>定义平面上简单多边形的能量函数E，满足如下性质： 1. 一阶连续可微； 2. 对不自交的多边形，能量有限，当趋于自交时，能量趋于无穷； 3. 在多边形展开时能量下降； 4. 能量可分，当图中独立的一部分远离其他部分时，有关这一部分的能量应当消失。</p>
+<p>定义两个简单多边形的形状距离J，度量两个简单多边形的相似程度。</p>
+<p>算法思想是，从起点图S和终点图T出发，将能量较高的图进行能量下降（形状展开），通过梯度投影，可以在能量下降过程中尽可能保证两者的形状距离减小，尽可能保持约束（如对应边长不变）成立。不断迭代进行这一过程，直到两个图收敛到相同的形状。总结为“能量交替下降直至距离收敛”的思想。
+注意到每一步迭代中，虽然两者的形状距离可能回升，但是能量函数均是单调减的，因此收敛是可以保证的，论文[1]中做了严格的证明。</p>
+<h5>下面对算法细节进行描述。</h5>
+<p>首先对能量函数E和形状距离J进行数学形式化表达：
+对于<mathjax>$N$</mathjax>个结点的简单多边形，令<mathjax>$\boldsymbol{v}_i$</mathjax>表示图中结点，<mathjax>$e_i$</mathjax>表示<mathjax>$\boldsymbol{v}_i$</mathjax>和<mathjax>$\boldsymbol{v}_{i+1}$</mathjax>之间的边，能量函数<mathjax>$E$</mathjax>可采取以下形式：
+<mathjax>$$
+E=\sum_{i=1}^{N}\sum_{j=1,j \neq i, j \neq i-1}^{N} \frac{1}{dist(\boldsymbol{v}_i, e_j)^2}
+$$</mathjax>
+其中<mathjax>$dist(\boldsymbol{v}_i, e_j)$</mathjax>表示平面上点vi和线段ej的欧几里得距离，</p>
+<p>形状距离L采用对应点的欧式距离的平方和，令<mathjax>$\boldsymbol{v}_i$</mathjax>和<mathjax>$\boldsymbol{u}_i$</mathjax>表示两个多边形中对应点
+<mathjax>$$
+L=\sum_{i=1}^{N}||\boldsymbol{v}_i - \boldsymbol{u}_i||_2^2
+$$</mathjax></p>
+<p>算法是基于梯度下降的迭代算法，在每一步迭代中，令H为当前S,T中能量函数E相对较高的一个。根据算法“能量交替下降直至距离收敛”的思想，每一步迭代中，仅对能量较高的多边形H进行梯度下降。
+利用上面两个式子，对<mathjax>$2N$</mathjax>个坐标点求导，容易得到能量函数梯度<mathjax>$G=\nabla E$</mathjax>  距离梯度<mathjax>$D=\nabla L$</mathjax> 。 显而易见的是，沿着距离梯度<mathjax>$D$</mathjax>移动坐标点，两个多边形会逐渐靠近，但是有可能边会相交；沿着能量梯度<mathjax>$G$</mathjax>移动坐标点，多边形会渐渐膨胀但是并不会逐渐靠近。如何在保证边不发生相交的前提下，让两个多边形尽可能靠近呢？</p>
+<p>答案是保持<mathjax>$D$</mathjax>的大方向不变，在能量梯度<mathjax>$G$</mathjax>的指导下予以纠正（energy-guided），以期在保证不会产生自交的情况下，最大限度的减少两多边形的距离。用数学的语言，就是将<mathjax>$D$</mathjax>投影到<mathjax>$G$</mathjax>的零空间中去，或者说，从<mathjax>$D$</mathjax>中减去<mathjax>$G$</mathjax>方向上的分量，如下面公式所示</p>
+<p><mathjax>$$
+D=(I-GG^T)D = D-(D^T G)G
+$$</mathjax></p>
+<p>在上述基础上，我们可以增加额外的限制来进一步控制该渐变过程，这里可以考虑的一种限制是限定某两点间的距离为常数。如果对所有相邻点间的边都施加此种限制，则相当于把每条边都变成了不可伸缩的刚体，这和很多实际场景是相符的，其变换过程也看起来更加自然和具有美感。</p>
+<p>这里假设每个限制都是可微的，且可以表达成<mathjax>$\Omega(H)=0$</mathjax>的标准形式。对于上述提出的相邻点间距离相等的限制，可以表达如下:
+<mathjax>$$
+||\boldsymbol{v}_i-\boldsymbol{v}_{i+1}||^2-l_i^2=0
+$$</mathjax></p>
+<p>若有<mathjax>$M$</mathjax>个限制，参数坐标有<mathjax>$2N$</mathjax>个，我们将每个限制的梯度向量<mathjax>$\nabla \Omega\in R^{2N}$</mathjax>组成一个<mathjax>$M\times2N$</mathjax>的矩阵<mathjax>$J$</mathjax>，然后将<mathjax>$D$</mathjax>投影到<mathjax>$J$</mathjax>的零空间中。投影后的<mathjax>$D$</mathjax>与<mathjax>$\nabla \Omega $</mathjax> 正交，因此不会违反这些限制。按照如下公式投影<mathjax>$D$</mathjax>
+<mathjax>$$
+D:=D-J^Tl
+$$</mathjax>
+其中<mathjax>$l$</mathjax>是<mathjax>$D$</mathjax>在<mathjax>$J$</mathjax>的行空间中的线性组合系数，可通过以下线性方程组解出
+<mathjax>$$
+JJ^Tl=JD
+$$</mathjax>
+可参考论文[3]理解该式的推导过程。</p>
+<p>为了防止错误累积，在实际实现中，增加了一个正则项
+<mathjax>$$
+JJ^Tl=JD+\alpha e
+$$</mathjax>
+其中<mathjax>$e_k=\Omega_k(H)$</mathjax>, <mathjax>$\alpha$</mathjax>是一个正常数，其越小说明这些限制越严格</p>
+<p>之前提到每一次迭代，要保证能量不升，我们也可以把它看作一个特殊的限制。将<mathjax>$G$</mathjax>添加到限制矩阵的最后一行，记为<mathjax>$f$</mathjax>；将一个正常数<mathjax>$\gamma$</mathjax>加到<mathjax>$e$</mathjax>的最后，记为<mathjax>$K$</mathjax>；通过下式求解<mathjax>$l$</mathjax>：
+<mathjax>$$
+KK^Tl = KD + \alpha f。
+$$</mathjax>
+值得注意的是，由于梯度会连续变化，沿着投影后的<mathjax>$D$</mathjax>前进微小的步长仍旧可能导致能量上升，在这种情况下可以调整<mathjax>$\gamma$</mathjax>的取值，或直接沿着<mathjax>$G$</mathjax>能量方向梯度下降，忍受暂时可能的距离上升。</p>
+<hr>
+<h3>实现细节</h3>
+<p>该算法使用javascript语言实现，在网站Demo中运行于服务器端。</p>
+<p>网站后端使用 nodejs 实现，前端使用 html + javascript 实现，实现过程中使用了两个开源工具包：
+- <em>d3.js</em>：用于画图和动画演示
+- <em>jquery.js</em>：用于简化javascript的函数</p>
+<p>前后端的通信使用了 <em>websocket</em> 和 <em>AJAX</em> 两种技术。</p>
+<p>下面重点讲解一些算法实现的关键细节：
+- 在判断多边形的边是否相交时，我们使用了四次 <strong>toLeftTest</strong>。但是会出现三点共线的情况，此时我们通过判断共线的点是否存在包含关系，来判断是否有相交的情况。判断是否存在某个点被在另一条线段包含的情况，我们使用了逐一点积的方法进行检验。</p>
+<p>代码可见 https://github.com/lgh303/refolding-planar-polygons</p>
+<hr>
+<h3>结果演示</h3>
+<p>demo 1：</p>
+<p><img alt="" src="https://github.com/lgh303/refolding-planar-polygons/blob/master/results/hook.gif?raw=true"></p>
+<p>demo 2：</p>
+<p><img alt="" src="https://github.com/lgh303/refolding-planar-polygons/blob/master/results/leaf_plane.gif?raw=true"></p>
+<hr>
+<h3>Reference</h3>
+<p>[1] Iben H N, O’Brien J F, Demaine E D. Refolding planar polygons[J]. Discrete &amp; Computational Geometry, 2009, 41(3): 444-460.
+[2] Connelly R, Demaine E D, Rote G. Straightening polygonal arcs and convexifying polygonal cycles[C]//Foundations of Computer Science, 2000. Proceedings. 41st Annual Symposium on. IEEE, 2000: 432-442. 
+[3] Hueck U, Schreyer H L. The use of orthogonal projections to handle constraints with applications to incompressible four‐node quadrilateral elements[J]. International journal for numerical methods in engineering, 1992, 35(8): 1633-1661.</p>
+        </article>
+      </div>
+    </div>
+  </body>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+          displayMath: [ ['$$', '$$'], ["\\[", "\\]"] ],
+          processEscapes: true
+        },
+        TeX: {
+          equationNumbers: {
+            autoNumber: 'AMS'
+          }
+        },
+        "HTML-CSS": {
+          imageFont: null
+        }
+      });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.1-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</html>
