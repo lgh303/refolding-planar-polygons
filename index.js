@@ -4,6 +4,7 @@ var server = require('http').Server(app)
 var io = require('socket.io')(server)
 var fs = require('fs')
 var deepcopy = require('deepcopy')
+var mkdirp = require('mkdirp');
 
 var solver = require('./solver')
 var utils = require('./utils')
@@ -59,13 +60,18 @@ function listening() {
             var json = data["json"]
             var filepath = '/upload/' + filename + '.json'
             /*var date = new Date();
-            var t = date.getTime();*/
-            fs.writeFile('.' + filepath, JSON.stringify(json), function(err){
+              var t = date.getTime();*/
+            mkdirp('./upload/', function(err) {
                 if (err) {
-                    console.log('写文件错误')
-                } else {
-                    client.emit('save', {"filepath": filepath, "filename": filename})
+                    console.log("Error making dir: " + err)
                 }
+                fs.writeFile('.' + filepath, JSON.stringify(json), function(err){
+                    if (err) {
+                        console.log('Error writing file: ' + err)
+                    } else {
+                        client.emit('save', {"filepath": filepath, "filename": filename})
+                    }
+                })
             })
         })
 

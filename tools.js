@@ -1,3 +1,6 @@
+var fs = require('fs')
+var math = require('mathjs')
+
 function equal_arr(arr1, arr2) {
     if (arr1.length != arr2.length) {
         throw "equal_arr: length not equal"
@@ -45,5 +48,27 @@ function centered(vec) {
     return ret
 }
 
+function scale_json(name, scalex, scaley) {
+    fs.readFile("./data/" + name + ".json", "utf8", function(err, json_data) {
+        if (err) {
+            throw err
+        }
+        data = JSON.parse(json_data)
+        N = data.s_points.length
+        for (var i = 0; i < N; ++i) {
+            data.s_points[i][0] = data.s_points[i][0] * scalex
+            data.s_points[i][1] = data.s_points[i][1] * scaley
+            data.t_points[i][0] = data.t_points[i][0] * scalex
+            data.t_points[i][1] = data.t_points[i][1] * scaley
+        }
+        fs.writeFile("./data/" + name + "_large.json", JSON.stringify(data), function(err) {
+            if (err) {
+                console.log("Error write large file: " + err)
+            }
+        })
+    })
+}
+                
 exports.unique_arr = unique_arr
 exports.centered = centered
+exports.scale_json = scale_json
