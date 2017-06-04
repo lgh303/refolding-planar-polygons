@@ -11,7 +11,7 @@
     <title>hehe</title>
 </head>
 <body>
-    <h4 id="info">&nbsp;</h4><br/>
+    <h4 id="info">&nbsp;</h4>
     <button id="forceBegin">&lt;|</button>
     <button id="forcePrevious">&lt;</button>
     <button id="run">Run</button>
@@ -20,6 +20,7 @@
     <button id="forceEnd">&gt;|</button>
     <button id="save">Save</button>
     <button id="load">Load</button>
+    <select id="select"></select>
     <a id='download'> </a>
 
     <div>
@@ -27,23 +28,23 @@
     distance: <label id="label-distance"></label>
     </div>
     <div>
-        <div style="float:left; margin-right:20px">
-            <button id="left-action-done">Close</button>
+        <div style="float:left; display:inline; margin-right:20px">
+            <button id="left-action-done">Enclose</button>
             <button id="left-action-cancel">Cancel</button>
             <button id="left-action-clear">Clear</button>
             <button id="left-action-skeleton">Skeleton</button>
             s_energy: <label id="label-s-energy"></label><br/>
             <svg id="area-left" style="width:540; height: 360; border: 1px solid;"></svg>
         </div>
-        <div style="float:left">
-            <button id="right-action-done">Close</button>
+        <div style="display:inline; ">
+            <button id="right-action-done">Enclose</button>
             <button id="right-action-cancel">Cancel</button>
             <button id="right-action-clear">Clear</button>
             <button id="right-action-skeleton" disabled="disabled">Skeleton</button>
             t_energy: <label id="label-t-energy"></label><br/>
             <svg id="area-right" style="width:540; height: 360; border: 1px solid;"></svg>
         </div>
-    </div></br>
+    </div>
     <div>
         <button id="display">Display</button></br>
         <svg id="area-display" style="width:540; height: 360; border: 1px solid;"></svg>
@@ -456,6 +457,17 @@
         var info_store=[];
         var socket = io();
         var isdragging = false;
+
+        socket.emit("get_filenames", {});
+        socket.on("get_filenames", function(filenames){
+            var select = $("#select");
+            select.empty();
+            for (var i = 0; i < filenames.length; i++) {
+                var filename = filenames[i];
+                var option = $("<option>").val(filename).text(filename);
+                select.append(option);
+            }
+        });
 
         d3.select("#area-left").on("click", function(e=window.event) {
             var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-left").offset().left;

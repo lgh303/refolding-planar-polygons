@@ -68,6 +68,16 @@ function listening() {
                 }
             })
         })
+
+        client.on('get_filenames', function(data){
+            fs.readdir("./upload/", function(err, filenames) {
+                if (err) {
+                    console.log("Error: " + err)
+                    return;
+                }
+                client.emit('get_filenames', filenames)
+            })
+        })
     })
     server.listen(3000, function() {
         console.log('Listening on 3000...')
