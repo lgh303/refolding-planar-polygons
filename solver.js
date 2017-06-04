@@ -9,7 +9,7 @@ var energy_gradient = utils.energy_gradient
 var energy_status = utils.energy_status
 
 const base_learning_rate = 0.04
-const max_iter = 200
+const max_iter = 500
 const THRESHOLD = 0.001
 const alpha = 0.2
 const gamma = 1.5
@@ -87,7 +87,7 @@ function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs) {
     var b = K.x(D).add(f.x(alpha)).elements
     var l = $V(pcg(A, b))
     var proj_D = D.subtract(K.transpose().x(l)).elements
-    proj_D = tools.centered(proj_D)
+    //proj_D = tools.centered(proj_D)
 
     var move_amount = math.reshape(math.multiply(base_learning_rate, proj_D), [N, 2])
     var candidate_points = math.add(conf.points, move_amount),
