@@ -23,8 +23,12 @@
     <select id="select"></select>
     <a id='download'> </a>
 
-    <div>
-    Learning Rate: <input type="number" placeholder=1.0><br/>
+    <table>
+        <tr><td>Iteration</td><td><input type="text" id="iteration" value="300"></td></tr>
+        <tr><td>Threshold</td><td><input type="text" id="threshold" value="0.01"></td></tr>
+        <tr><td>Alpha</td><td><input type="text" id="alpha" value="0.2"></td></tr>
+        <tr><td>Gamma</td><td><input type="text" id="gamma" value="1.5"></td></tr>
+    </table>
     distance: <label id="label-distance"></label>
     </div>
     <div>
@@ -570,6 +574,10 @@
             left_tracks.splice(0);
             right_tracks.splice(0);
             var d = generate_json_from_view();
+            d["iteration"] = parseInt($("input#iteration").val());
+            d["threshold"] = parseFloat($("input#threshold").val());
+            d["alpha"] = parseFloat($("input#alpha").val());
+            d["gamma"] = parseFloat($("input#gamma").val());
             for (var i = 0; i < d.s_points.length; ++i) {
                 d.s_points[i][0] /= 54.0;
                 d.s_points[i][1] /= 36.0;
