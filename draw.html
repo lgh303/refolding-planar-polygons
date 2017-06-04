@@ -60,7 +60,13 @@
     <script>
         function to_left_test(a, b, c) {
             var s = (a[0] - b[0]) * (c[1] - b[1]) - (a[1] - b[1]) * (c[0] - b[0]);
-            if (Math.abs(s) < 1e-8) return 0;
+            if (Math.abs(s) < 1e-5) return 0;
+            return s < 0 ? -1 : 1;
+        }
+
+        function dot(a, b, c) {
+            var s = (a[0] - b[0]) * (c[0] - b[0]) + (a[1] - b[1]) * (c[1] - b[1]);
+            if (Math.abs(s) < 1e-5) return 0;
             return s < 0 ? -1 : 1;
         }
 
@@ -70,7 +76,13 @@
             var f1 = to_left_test(a, b, d);
             var f2 = to_left_test(c, d, a);
             var f3 = to_left_test(c, d, b);
-            return (f0 * f1 <= 0 && f2 * f3 <= 0);
+            if (f0 * f1 < 0 && f2 * f3 < 0) return true;
+            if (f0 * f1 > 0 || f2 * f3 > 0) return false;
+            if (f0 == 0 && dot(a, c, b) <= 0) return false;
+            if (f1 == 0 && dot(a, d, b) <= 0) return false;
+            if (f2 == 0 && dot(c, a, d) <= 0) return false;
+            if (f3 == 0 && dot(c, b, d) <= 0) return false;
+            return true;
         }
 
         // 加入一个新点
