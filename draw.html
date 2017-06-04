@@ -28,7 +28,7 @@
     </div>
     <div>
         <div style="float:left; margin-right:20px">
-            <button id="left-action-done">Done</button>
+            <button id="left-action-done">Close</button>
             <button id="left-action-cancel">Cancel</button>
             <button id="left-action-clear">Clear</button>
             <button id="left-action-skeleton">Skeleton</button>
@@ -36,7 +36,7 @@
             <svg id="area-left" style="width:540; height: 360; border: 1px solid;"></svg>
         </div>
         <div style="float:left">
-            <button id="right-action-done">Done</button>
+            <button id="right-action-done">Close</button>
             <button id="right-action-cancel">Cancel</button>
             <button id="right-action-clear">Clear</button>
             <button id="right-action-skeleton" disabled="disabled">Skeleton</button>
@@ -190,24 +190,30 @@
             params["skeleton"].splice(0, params["skeleton"].length);
         }
 
-        // 清除最后一个加入的点，Done 的情况下清除封闭线
+        // 清除最后一个加入的操作
         function cancel_lastone(prefix, points, params) {
-            params["done"] = false;
             // 恢复到 run 之前的位置先
             update_positions(prefix, points, points, params, 0);
+            // 如果有骨架
+            if (params["skeleton"].length) {
+                var len = params["skeleton"].length;
+                var last = params["skeleton"][len - 1];
+                $("#" + prefix + "-skeleton-" + last[0] + "-" + last[1]).remove();
+                params["skeleton"].pop();
+                return;
+            } else
+            // 如果闭合了
             if($("#" + prefix + "-path-0").length) {
                 $("#" + prefix + "-path-0").remove();
-            } else {
+                return;
+            } else
+            // 删一个点
+            {
                 var i = points.length - 1;
                 $("#" + prefix + "-circle-" + i).remove();
                 $("#" + prefix + "-path-" + i).remove();
                 points.pop();
             }
-
-            params["skeleton"] = []
-            $("path#" + prefix + "-skeleton").each(function(){
-                $(this).remove();
-            });
         }
 
         // 添加骨架限制
@@ -237,7 +243,7 @@
                 var d = "M"+points[p][0]+","+points[p][1]+"L"+points[q][0]+","+points[q][1];
                 d3.select("#area-" + prefix)
                     .append("path")
-                    .attr("id", prefix+"-skeleton-"+p+"-"+q)
+                    .attr("id", prefix + "-skeleton-" + p + "-" + q)
                     .attr("d", d)
                     .style("stroke", "blue")
                     .style("stroke-width", 2);
