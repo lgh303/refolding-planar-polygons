@@ -69,7 +69,7 @@ function listening() {
             })
         })
 
-        client.on('get_filenames', function(data){
+        client.on("get_filenames", function(data){
             fs.readdir("./upload/", function(err, filenames) {
                 if (err) {
                     console.log("Error: " + err)
@@ -78,7 +78,19 @@ function listening() {
                 client.emit('get_filenames', filenames)
             })
         })
+
+        client.on("load", function(filename){
+            fs.readFile("./upload/" + filename, "utf8", function(err, data) {
+                if (err) {
+                    console.log("Error: " + err)
+                    return;
+                }
+                json = JSON.parse(data)
+                client.emit("load", json)
+            })
+        })
     })
+
     server.listen(3000, function() {
         console.log('Listening on 3000...')
     })

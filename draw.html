@@ -217,8 +217,19 @@
             }
         }
 
+        function add_skeleton(prefix, points, params, p, q) {
+            var d = "M"+points[p][0]+","+points[p][1]+"L"+points[q][0]+","+points[q][1];
+            d3.select("#area-" + prefix)
+                .append("path")
+                .attr("id", prefix + "-skeleton-" + p + "-" + q)
+                .attr("d", d)
+                .style("stroke", "blue")
+                .style("stroke-width", 2);
+            params["skeleton"].push([p, q]);
+        }
+
         // 添加骨架限制
-        function add_skeleton(prefix, points, params) {
+        function add_skeleton_from_view(prefix, points, params) {
             if (!params["done"]) {
                 console.log("please click \"Done\" first");
                 $("#info").text("please click \"Done\" first");
@@ -237,18 +248,9 @@
                 return;
             }
             // 画骨架
-            if (points.length > 0) {
-                var p = selected[0];
-                var q = selected[1];
-                params["skeleton"].push([p, q]);
-                var d = "M"+points[p][0]+","+points[p][1]+"L"+points[q][0]+","+points[q][1];
-                d3.select("#area-" + prefix)
-                    .append("path")
-                    .attr("id", prefix + "-skeleton-" + p + "-" + q)
-                    .attr("d", d)
-                    .style("stroke", "blue")
-                    .style("stroke-width", 2);
-            }
+            var p = selected[0];
+            var q = selected[1];
+            add_skeleton(prefix, points, params, p, q);
         }
 
         // 生成json
@@ -422,7 +424,7 @@
                     }
                     // 相交则恢复原来的位置
                     if(intersect) {
-                        alert("intersect");
+                        $("#info").text("intersect");
                         d3.select("#" + prefix + "-circle-" + index).attr("cx", startx).attr("cy", starty);
                         var id = "#" + prefix + "-path-" + index;
                         if($(id).length) {
@@ -447,7 +449,26 @@
             });
         }
 
+        function refresh_select() {
+            socket.emit("get_filenames", {});
+        }
 
+        function load_from_json(json, leftpoints, leftparams, rightpoints, rightparams) {
+            clear_all("left", leftpoints, leftparams);
+            clear_all("right", rightpoints, rightparams);
+            var s = json["s_points"];
+            var t = json["t_points"];
+            var e = json["edge_constrains"];
+            for (var i in s) add_new_point("left", leftpoints, leftparams, s[i][0], s[i][1]);
+            for (var i in t) add_new_point("right", rightpoints, rightparams, t[i][0], t[i][1]);
+            polygon_done("left", leftpoints, leftparams);
+            polygon_done("right", rightpoints, rightparams);
+            for (var i in e) add_skeleton("left", leftpoints, leftparams, e[i][0], e[i][1]);
+        }
+
+
+
+        // main
         radius = 5;
         var leftpoints = [];
         var rightpoints = [];
@@ -458,7 +479,6 @@
         var socket = io();
         var isdragging = false;
 
-        socket.emit("get_filenames", {});
         socket.on("get_filenames", function(filenames){
             var select = $("#select");
             select.empty();
@@ -468,6 +488,7 @@
                 select.append(option);
             }
         });
+        refresh_select();
 
         d3.select("#area-left").on("click", function(e=window.event) {
             var cx = (e.pageX || e.clientX + document.body.scrollLeft) - $("#area-left").offset().left;
@@ -497,7 +518,7 @@
             clear_all("left", leftpoints, leftparams);
         });
         $("#left-action-skeleton").click(function(){
-            add_skeleton("left", leftpoints, leftparams);
+            add_skeleton_from_view("left", leftpoints, leftparams);
         });
 
 
@@ -511,15 +532,17 @@
         $("#right-action-clear").click(function(){
             clear_all("right", rightpoints, rightparams);
         });
-        $("#right-action-skeleton").click(function(){
-            add_skeleton("right", rightpoints, rightparams);
-        });
 
 
 
         $("#load").click(function(){
-
+            var filename = $("#select").val();
+            socket.emit("load", filename);
         });
+        socket.on("load", function(json){
+            load_from_json(json, leftpoints, leftparams, rightpoints, rightparams);
+        });
+
         $("#save").click(function(){
             var filename = prompt("please enter file name","");
             var d = generate_json_from_data(leftpoints, leftparams, rightpoints, rightparams);
@@ -531,13 +554,14 @@
             $("a#download").attr("href", filepath);
             $("a#download").attr("download", filename);
             document.getElementById("download").click();
+            refresh_select();
         });
 
 
 
         $("#run").click(function(){
             if(leftpoints.length != rightpoints.length) {
-                alert("Points aren't matched.");
+                $("#info").text("Points aren't matched.");
                 return;
             }
             left_tracks.splice(0);
