@@ -13,12 +13,13 @@
     <link href="main.css" rel="stylesheet">
 </head>
 <body>
+    <div id='cover'></div>
+    <div id='show'>
+        <img id="close" src="close.png" />
+        <svg id="area-display" style="width:540; height: 360; border: 1px solid;"></svg>
+    </div>
     <h4 id="info">&nbsp;</h4>
-    <button id="run">Run</button>
-    <button id="reset">Reset</button>
-    <button id="display">Display</button>
-    <button id="forceNext">&gt;</button>
-    <button id="forceEnd">&gt;|</button>
+    
     <button id="save">Save</button>
     <button id="load">Load</button>
     <select id="select"></select>
@@ -33,8 +34,16 @@
             <td>Threshold:</td><td><input type="text" id="threshold" value="0.01"></td>
             <td>Display Speed:</td><td><input type="number" id="display-speed" value=1 min=1 max=10></td>
         </tr>
-        <tr><td>Alpha:</td><td><input type="text" id="alpha" value="0.2"></td></tr>
-        <tr><td>Gamma:</td><td><input type="text" id="gamma" value="1.5"></td></tr>
+        <tr>
+            <td>Alpha:</td><td><input type="text" id="alpha" value="0.2"></td>            
+            <td>
+                <button id="run">Run</button>
+                <button id="reset">Reset</button>
+            </td>
+            <td>
+                <button id="display">Display</button>
+            </td>
+        </tr>
     </table>
     Distance: <label id="label-distance"></label>
     <div id='drawing'>
@@ -57,9 +66,6 @@
             </div>
             <svg id="area-right" style="width:540; height: 360; border: 1px solid;"></svg>
         </div>
-    </div>
-    <div>
-        <svg id="area-display" style="width:540; height: 360; border: 1px solid;"></svg>
     </div>
     <!-- <link rel="stylesheet" href="test.css"> -->
     <script src="/socket.io/socket.io.js"></script>
@@ -654,10 +660,15 @@
             update_positions("right", rightpoints, rightpoints, rightparams, 0);
             $("#run").prop("disabled", false);
         });
+        
+        $("#close").click(function() {
+            $("#cover").css("display", "none");
+            $("#show").css("display", "none");           
+        });
 
         $("#display").click(function() {
-            var h = $(document).height()-$(window).height();
-            $(document).scrollTop(h);
+            $("#cover").css("display", "block");
+            $("#show").css("display", "block");
             $("#area-display").html('');
             var prefix="display";
             var n = leftpoints.length;

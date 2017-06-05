@@ -11,13 +11,21 @@ button {
     margin-right: 5px;
 }
 
+#run, #reset, #display {
+    margin-top:5px;
+}
+
+#display {
+    margin-left:5px;
+}
+
 #parameter {
     margin-top: 10px;
     margin-bottom:10px;
 }
 
 #iteration, #threshold, #alpha, #gamma, #lr, #display-speed{
-    margin-left: 10px;
+    margin-left: 20px;
     margin-right: 20px;
     margin-top: 5px;
 }
@@ -36,6 +44,52 @@ button {
 }
 
 #area-display {
-    margin-top: 20px;
-    margin-bottom: 50px;
+    margin-top: 50px;
+    margin-left: 50px;
+}
+
+#cover {
+    width:100%; 
+    height:100%; 
+    background-color:#000; 
+    filter:alpha(opacity=78); 
+    -moz-opacity:0.78; 
+    opacity:0.78; 
+    position:absolute; 
+    left:0px; 
+    top:0px; 
+    display:none; 
+    z-index:1000; 
+} 
+
+#show {
+    width:670px; 
+    height:460px; 
+    background-color:#F0F0F0; 
+    position:absolute; 
+    left:0px; 
+    top:0px; 
+    display:none; 
+    z-index:1001; 
+}
+
+#close {
+    width:20px;
+    height:20px;
+    margin-left:620px;
+    margin-top:20px;
+    position:absolute;
+}
+
+#area-left, #area-right, #area-display {
+    display: block;
+    cursor: default;
+    background: #fff url(bgimg.jpg) repeat;
+    -webkit-box-shadow:0 5px 10px #666; 
+    -moz-box-shadow:0 5px 10px #666;
+    box-shadow:0 5px 10px #666;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    -o-border-radius:5px;
+    border-radius:5px;    
 }
