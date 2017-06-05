@@ -41,19 +41,29 @@ function update_config_naive(config, D, G, learning_rate) {
     var candidate_points = math.add(config.points, move_amount),
         candidate_status = energy_status(candidate_points)
     if (candidate_status.energy > config.status.energy) {
-        var proj_D_bias = math.subtract(proj_D, math.multiply(G, 1.0))
-        var move_amount_bias = math.reshape(
-            math.multiply(learning_rate, proj_D_bias), [N, 2])
-        var candidate_points_bias = math.add(config.points, move_amount_bias),
+        var bias = 0.02
+        var found = false
+        while (bias < 0.6) {
+            var proj_D_bias = math.subtract(proj_D, math.multiply(G, bias))
+            var move_amount_bias = math.reshape(
+                math.multiply(learning_rate, proj_D_bias), [N, 2])
+            var candidate_points_bias = math.add(config.points, move_amount_bias),
             candidate_status_bias = energy_status(candidate_points_bias)
-        if (candidate_status_bias.energy > config.status.energy) {
+            if (candidate_status_bias.energy < config.status.energy) {
+                config.points = candidate_points_bias
+                console.log("follow proj_D_bias, bias = " + bias)
+                found = true
+                break
+            } else {
+                bias = bias * 1.2
+                console.log("enlarge bias = " + bias)
+            }
+        }
+        if (!found) {
             var move_amount_energy = math.reshape(
                 math.multiply(learning_rate, G), [N, 2])
             config.points = math.subtract(config.points, move_amount_energy)
             console.log("follow G")
-        } else {
-            config.points = candidate_points_bias
-            console.log("follow proj_D_bias")
         }
     } else {
         config.points = candidate_points
