@@ -8,10 +8,11 @@ var utils = require('./utils')
 var energy_gradient = utils.energy_gradient
 var energy_status = utils.energy_status
 
-const base_learning_rate = 0.04
-const default_max_iter = 400
+const default_learning_rate = 0.03
+const default_max_iter = 300
 const default_threshold = 0.005
-const default_alpha = 0.15
+const default_alpha = 0.2
+
 const default_gamma = 1.5
 
 function dist_gd(data, status_save, callback_draw) {
@@ -20,7 +21,7 @@ function dist_gd(data, status_save, callback_draw) {
         var s_points = data["s_points"],
             t_points = data["t_points"]
         var dist_gradient = math.multiply(2, math.subtract(s_points, t_points))
-        s_points = math.subtract(s_points, math.multiply(base_learning_rate, dist_gradient))
+        s_points = math.subtract(s_points, math.multiply(default_learning_rate, dist_gradient))
         data = {"s_points": s_points, "t_points": t_points}
         results.push(data)
         if (callback_draw !== null) {
@@ -30,24 +31,24 @@ function dist_gd(data, status_save, callback_draw) {
     return results
 }
 
-function update_config_naive(config, D, G) {
+function update_config_naive(config, D, G, learning_rate) {
     var N = config.points.length
     var proj_D = D
     if (math.dot(D, G) > 0) {
         proj_D = math.subtract(D, math.multiply(math.dot(D, G),  G))
     }
-    var move_amount = math.reshape(math.multiply(base_learning_rate, proj_D), [N, 2])
+    var move_amount = math.reshape(math.multiply(learning_rate, proj_D), [N, 2])
     var candidate_points = math.add(config.points, move_amount),
         candidate_status = energy_status(candidate_points)
     if (candidate_status.energy > config.status.energy) {
         var proj_D_bias = math.subtract(proj_D, math.multiply(G, 1.0))
         var move_amount_bias = math.reshape(
-            math.multiply(base_learning_rate, proj_D_bias), [N, 2])
+            math.multiply(learning_rate, proj_D_bias), [N, 2])
         var candidate_points_bias = math.add(config.points, move_amount_bias),
             candidate_status_bias = energy_status(candidate_points_bias)
         if (candidate_status_bias.energy > config.status.energy) {
             var move_amount_energy = math.reshape(
-                math.multiply(base_learning_rate, G), [N, 2])
+                math.multiply(learning_rate, G), [N, 2])
             config.points = math.subtract(config.points, move_amount_energy)
             console.log("follow G")
         } else {
@@ -60,8 +61,8 @@ function update_config_naive(config, D, G) {
     }
 }
 
-function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs,
-                                       alpha, gamma) {
+function update_config_with_constrains(conf, l_const, D, G, constrains_pairs,
+                                       alpha, base_gamma, learning_rate) {
     var P = conf.points
     var N = P.length
     var K_sparse = []
@@ -78,29 +79,41 @@ function update_config_with_constrains(conf, l_conf, D, G, constrains_pairs,
     }
     var n_constrains = constrains_pairs.length + 1
     var K = CSRMatrix.fromList(K_sparse, n_constrains, 2 * N).toDense()
-    var f = utils.calc_constrains_omega(conf, l_conf, constrains_pairs)
-    f.push(gamma)
+    var e = utils.calc_constrains_omega(conf, l_const, constrains_pairs)
     K = $M(K)
     D = $V(D)
-    f = $V(f)
 
     var A = CSRMatrix.fromDense(K.x(K.transpose()).elements)
-    var b = K.x(D).add(f.x(alpha)).elements
-    var l = $V(pcg(A, b))
-    var proj_D = D.subtract(K.transpose().x(l)).elements
-    //proj_D = tools.centered(proj_D)
 
-    var move_amount = math.reshape(math.multiply(base_learning_rate, proj_D), [N, 2])
-    var candidate_points = math.add(conf.points, move_amount),
+    var gamma = base_gamma
+    var enlarged = false, shrinked = false
+    while (true) {
+        var reg = $V(e).x(alpha).elements
+        reg.push(gamma)
+        reg = $V(reg)
+        var b = K.x(D).add(reg).elements
+        var l = $V(pcg(A, b))
+        var proj_D = D.subtract(K.transpose().x(l)).elements
+        var move_amount = math.reshape(math.multiply(learning_rate, proj_D), [N, 2])
+        var candidate_points = math.add(conf.points, move_amount),
         candidate_status = energy_status(candidate_points)
-    if (candidate_status.energy > conf.status.energy) {
-        var move_amount_energy = math.reshape(math.multiply(base_learning_rate, G), [N, 2])
-        conf.points = math.subtract(conf.points, move_amount_energy)
-        console.log("follow G")
-    } else {
-        conf.points = candidate_points
-        console.log("follow proj_D")
+        console.log("candidata.energy=" + candidate_status.energy + ", conf.energy=" + conf.status.energy)
+        if (candidate_status.energy > conf.status.energy) {
+            gamma = gamma * 1.2
+            enlarged = true
+            console.log("enlarge Gamma <= " + gamma)
+        } else {
+            if (enlarged || gamma < 0.03) {
+                conf.points = candidate_points
+                console.log("follow proj_D")
+                break
+            } else {
+                gamma = gamma / 1.2
+                console.log("shrink Gamma <= " + gamma)
+            }
+        }
     }
+    return gamma
 }
 
 function energy_gd(data, callback_draw) {
@@ -112,6 +125,7 @@ function energy_gd(data, callback_draw) {
     var threshold = data["threshold"] || default_threshold
     var alpha = data["alpha"] || default_alpha
     var gamma = data["gamma"] || default_gamma
+    var learning_rate = data["lr"] || default_learning_rate
     var results = [data]
     var edge_constrains_pairs = data.edge_constrains
     if (edge_constrains_pairs === undefined) {
@@ -122,7 +136,10 @@ function energy_gd(data, callback_draw) {
     //     edge_constrains_pairs.push([i, (i + 1) % N])
     // }
     edge_constrains_pairs = tools.unique_arr(edge_constrains_pairs)
-    
+    length_const = utils.calc_constrains_const(data.s_points, data.t_points,
+                                               edge_constrains_pairs)
+
+    var gamma_s = gamma, gamma_t = gamma
     for (var i = 0; i < max_iter; i++) {
         console.log("Iteration " + i)
         var s_points = data.s_points, t_points = data.t_points
@@ -132,33 +149,39 @@ function energy_gd(data, callback_draw) {
         if (s_status.energy > t_status.energy) {
             high_config = {"points": s_points, "status": s_status, "label": 0}
             low_config = {"points": t_points, "status": t_status}
+            gamma = gamma_s
         } else {
             high_config = {"points": t_points, "status": t_status, "label": 1}
             low_config = {"points": s_points, "status": s_status}
+            gamma = gamma_t
         }
         
         var D = math.flatten(math.multiply(-2, math.subtract(high_config.points, low_config.points)))
         var h_grad = math.flatten(high_config.status.energy_grad)
         var G = math.divide(h_grad, math.norm(h_grad))
         if (edge_constrains_pairs.length === 0) {
-            update_config_naive(high_config, D, G)    
+            update_config_naive(high_config, D, G, learning_rate)
         } else {
-            update_config_with_constrains(high_config, low_config, D, G,
-                                          edge_constrains_pairs, alpha, gamma)
+            gamma = update_config_with_constrains(high_config, length_const, D, G,
+                                                  edge_constrains_pairs, alpha, gamma,
+                                                  learning_rate)
         }
         if (high_config.label === 0) {
             s_points = high_config.points
+            gamma_s = gamma
         } else {
             t_points = high_config.points
+            gamma_t = gamma
         }
 
-        status_save = utils.status(data)
         data = {
             "s_points": s_points, "t_points": t_points,
-            "s_energy": status_save.s_status.energy,
-            "t_energy": status_save.t_status.energy,
-            "distance": status_save.distance,
         }
+        status_save = utils.status(data)
+        data["s_energy"] = status_save.s_status.energy
+        data["t_energy"] = status_save.t_status.energy
+        data["distance"] = status_save.distance
+
         console.log("s_energy: " + status_save.s_status.energy.toPrecision(4) +
                     "; t_energy: " + status_save.t_status.energy.toPrecision(4) +
                     "; distance: " + status_save.distance.toPrecision(4))
