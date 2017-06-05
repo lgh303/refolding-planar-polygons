@@ -1,0 +1,40 @@
+body {
+    margin-left:80px;
+    background: #f0f0f0;
+}
+
+tr {
+    margin-top: 60px;
+}
+
+button {
+    margin-right: 5px;
+}
+
+#parameter {
+    margin-top: 10px;
+    margin-bottom:10px;
+}
+
+#iteration, #threshold, #alpha, #gamma {
+    margin-left: 10px;
+    margin-top: 5px;
+}
+
+#drawing {
+    margin-top:5px;
+    margin-bottom:10px;
+}
+
+#usage1, #usage2 {
+    margin-bottom:10px;
+}
+
+#left-action-skeleton, #right-action-clear {
+    margin-right: 10px;
+}
+
+#area-display {
+    margin-top: 20px;
+    margin-bottom: 50px;
+}
