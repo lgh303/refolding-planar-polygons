@@ -21,9 +21,9 @@
 
     <table>
         <tr><td>Iteration</td><td><input type="text" id="iteration" value="300"></td></tr>
-        <tr><td>Threshold</td><td><input type="text" id="threshold" value="0.01"></td></tr>
+        <tr><td>Distance Threshold</td><td><input type="text" id="threshold" value="0.005"></td></tr>
         <tr><td>Alpha</td><td><input type="text" id="alpha" value="0.2"></td></tr>
-        <tr><td>Gamma</td><td><input type="text" id="gamma" value="1.5"></td></tr>
+        <tr><td>Learning Rate</td><td><input type="text" id="lr" value="0.03"></td></tr>
         <tr><td>Display Speed</td><td><input type="number" id="display-speed" value=1 min=1 max=10></td></tr>
     </table>
     distance: <label id="label-distance"></label>
@@ -480,10 +480,14 @@
             polygon_done("right", rightpoints, rightparams);
             for (var i in e) add_skeleton("left", leftpoints, leftparams, e[i][0], e[i][1]);
             // lgh changes
-            if (json["iteration"]) $("input#iteration").val(json["iteration"]);
-            if (json["threshold"]) $("input#threshold").val(json["threshold"]);
-            if (json["alpha"]) $("input#alpha").val(json["alpha"]);
-            if (json["gamma"]) $("input#gamma").val(json["gamma"]);
+            var iteration = json["iteration"] ? json["iteration"] : 300;
+            var threshold = json["threshold"] ? json["threshold"] : 0.005;
+            var alpha = json["alpha"] ? json["alpha"] : 0.2;
+            var lr = json["lr"] ? json["lr"] : 0.03;
+            $("input#iteration").val(iteration);
+            $("input#threshold").val(threshold);
+            $("input#alpha").val(alpha);
+            $("input#lr").val(lr);
         }
 
         function durationBySpeed() {
@@ -596,7 +600,7 @@
                 d["iteration"] = parseInt($("input#iteration").val());
                 d["threshold"] = parseFloat($("input#threshold").val());
                 d["alpha"] = parseFloat($("input#alpha").val());
-                d["gamma"] = parseFloat($("input#gamma").val());
+                d["lr"] = parseFloat($("input#lr").val());
                 for (var i = 0; i < d.s_points.length; ++i) {
                     d.s_points[i][0] /= 54.0;
                     d.s_points[i][1] /= 36.0;
@@ -634,6 +638,7 @@
             right_tracks.splice(0);
             update_positions("left", leftpoints, leftpoints, leftparams, 0);
             update_positions("right", rightpoints, rightpoints, rightparams, 0);
+            $("#run").prop("disabled", false);
         });
 
         $("#display").click(function() {

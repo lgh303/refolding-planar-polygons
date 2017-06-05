@@ -61,19 +61,28 @@ function status(data) {
     }
 }
 
-function calc_constrains_omega(h_conf, l_conf, constrains_pairs) {
-    var H = h_conf.points, L = l_conf.points
+function calc_constrains_const(h_points, l_points, constrains_pairs) {
+    var H = h_points, L = l_points
+    var N = h_points.length
+    var consts = []
+    for (var k = 0; k < constrains_pairs.length; ++k) {
+        var i = constrains_pairs[k][0], j = constrains_pairs[k][1]
+        var hx = H[i][0] - H[j][0], hy = H[i][1] - H[j][1]
+        var lx = L[i][0] - L[j][0], ly = L[i][1] - L[j][1]
+        consts.push(0.5 * (hx * hx + hy * hy + lx * lx + ly * ly))
+    }
+    return consts
+}
+
+function calc_constrains_omega(h_conf, l_const, constrains_pairs) {
+    var H = h_conf.points
     var N = H.length
     var omegas = []
     for (var k = 0; k < constrains_pairs.length; ++k) {
         var i = constrains_pairs[k][0], j = constrains_pairs[k][1]
-        var lx = L[i][0] - L[j][0],
-            ly = L[i][1] - L[j][1],
-            hx = H[i][0] - H[j][0],
+        var hx = H[i][0] - H[j][0],
             hy = H[i][1] - H[j][1]
-        var dx = lx, dy = ly
-        var l = dx * dx + dy * dy
-        omegas.push(hx * hx + hy * hy - l)
+        omegas.push(hx * hx + hy * hy - l_const[k])
     }
     return omegas
 }
@@ -81,4 +90,5 @@ function calc_constrains_omega(h_conf, l_conf, constrains_pairs) {
 exports.energy_gradient = energy_gradient
 exports.energy_status = energy_status
 exports.status = status
+exports.calc_constrains_const = calc_constrains_const
 exports.calc_constrains_omega = calc_constrains_omega
