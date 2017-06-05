@@ -16,8 +16,9 @@ button {
     margin-bottom:10px;
 }
 
-#iteration, #threshold, #alpha, #gamma {
+#iteration, #threshold, #alpha, #gamma, #lr, #display-speed{
     margin-left: 10px;
+    margin-right: 20px;
     margin-top: 5px;
 }
 
