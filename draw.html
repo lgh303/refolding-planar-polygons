@@ -592,19 +592,21 @@
             right_tracks.splice(0);
             info_store.splice(0);
             var d = generate_json_from_view();
-            d["iteration"] = parseInt($("input#iteration").val());
-            d["threshold"] = parseFloat($("input#threshold").val());
-            d["alpha"] = parseFloat($("input#alpha").val());
-            d["gamma"] = parseFloat($("input#gamma").val());
-            for (var i = 0; i < d.s_points.length; ++i) {
-                d.s_points[i][0] /= 54.0;
-                d.s_points[i][1] /= 36.0;
-                d.t_points[i][0] /= 54.0;
-                d.t_points[i][1] /= 36.0;
-            }
-            $("#display").prop("disabled", true);
-            $("#run").prop("disabled", true);
-            socket.emit("run", d);
+            if(d.s_points.length > 0) {
+                d["iteration"] = parseInt($("input#iteration").val());
+                d["threshold"] = parseFloat($("input#threshold").val());
+                d["alpha"] = parseFloat($("input#alpha").val());
+                d["gamma"] = parseFloat($("input#gamma").val());
+                for (var i = 0; i < d.s_points.length; ++i) {
+                    d.s_points[i][0] /= 54.0;
+                    d.s_points[i][1] /= 36.0;
+                    d.t_points[i][0] /= 54.0;
+                    d.t_points[i][1] /= 36.0;
+                }
+                $("#display").prop("disabled", true);
+                $("#run").prop("disabled", true);
+                socket.emit("run", d);
+            } else $("#info").text("Please add points first.");
         });
         socket.on("run", function(data) {
             for (var i = 0; i < data.s_points.length; ++i) {
