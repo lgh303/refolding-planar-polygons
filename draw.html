@@ -340,9 +340,11 @@
         function start_animate_tracks(prefix, points, params, tracks, duration, show_info=false, wait_time=1000, stopfunc=function(){
             $("#display").prop("disabled", false);
             $("#run").prop("disabled", false);
+            if_animation_end = true;
         }) {
             var step = 0;
             var waiting = false;
+            if_animation_end = false;
             function animate() {
                 if(tracks.length == 0) {
                     console.error("No tracks.");
@@ -525,6 +527,7 @@
         var info_store=[];
         var socket = io();
         var isdragging = false;
+        var if_animation_end = true;
 
         socket.on("get_filenames", function(filenames){
             var select = $("#select");
@@ -665,31 +668,32 @@
             $("#cover").css("display", "none");
             $("#show").css("display", "none");           
         });
-
+        
         $("#display").click(function() {
             $("#cover").css("display", "block");
             $("#show").css("display", "block");
-            $("#area-display").html('');
-            var prefix="display";
-            var n = leftpoints.length;
-            for(var i=0; i<n; i++) {
-                d3.select("#area-" + prefix).append("circle").attr("id", prefix + "-circle-" + i).attr("cx", leftpoints[i][0]).attr("cy", leftpoints[i][1]).attr("r", radius).attr("fill", "black");
-                var d = "M"+leftpoints[(i+n-1)%n][0]+","+leftpoints[(i+n-1)%n][1]+"L"+leftpoints[i][0]+","+leftpoints[i][1];
-                d3.select("#area-"+prefix).append("path").attr("id", prefix+"-path-"+i).attr("d", d).style("stroke", "#333").style("stroke-width", 1);
+            if(if_animation_end){
+                $("#area-display").html('');
+                var prefix="display";
+                var n = leftpoints.length;
+                for(var i=0; i<n; i++) {
+                    d3.select("#area-" + prefix).append("circle").attr("id", prefix + "-circle-" + i).attr("cx", leftpoints[i][0]).attr("cy", leftpoints[i][1]).attr("r", radius).attr("fill", "black");
+                    var d = "M"+leftpoints[(i+n-1)%n][0]+","+leftpoints[(i+n-1)%n][1]+"L"+leftpoints[i][0]+","+leftpoints[i][1];
+                    d3.select("#area-"+prefix).append("path").attr("id", prefix+"-path-"+i).attr("d", d).style("stroke", "#333").style("stroke-width", 1);
+                }
+                for(var i=0; i<leftparams["skeleton"].length; i ++) {
+                    var p0=leftparams["skeleton"][i][0], p1=leftparams["skeleton"][i][1];
+                    var d = "M"+leftpoints[p0][0]+","+leftpoints[p0][1]+"L"+leftpoints[p1][0]+","+leftpoints[p1][1];
+                    d3.select("#area-"+prefix).append("path").attr("id", prefix+"-skeleton-"+p0+"-"+p1).attr("d", d).style("stroke", "blue").style("stroke-width", 2);
+                }
+                var tracks = $.extend([], left_tracks);
+                var tmp = $.extend([], right_tracks);
+                tmp.reverse();
+                tracks = tracks.concat(tmp);
+                tracks.push(rightpoints);
+                $("#run").prop("disabled", true);
+                start_animate_tracks(prefix, leftpoints, leftparams, tracks, durationBySpeed(), 0)();
             }
-            for(var i=0; i<leftparams["skeleton"].length; i ++) {
-                var p0=leftparams["skeleton"][i][0], p1=leftparams["skeleton"][i][1];
-                var d = "M"+leftpoints[p0][0]+","+leftpoints[p0][1]+"L"+leftpoints[p1][0]+","+leftpoints[p1][1];
-                d3.select("#area-"+prefix).append("path").attr("id", prefix+"-skeleton-"+p0+"-"+p1).attr("d", d).style("stroke", "blue").style("stroke-width", 2);
-            }
-            var tracks = $.extend([], left_tracks);
-            var tmp = $.extend([], right_tracks);
-            tmp.reverse();
-            tracks = tracks.concat(tmp);
-            tracks.push(rightpoints);
-            $("#display").prop("disabled", true);
-            $("#run").prop("disabled", true);
-            start_animate_tracks(prefix, leftpoints, leftparams, tracks, durationBySpeed(), 0)();
         });
 
         register_drag_operation("area-left", "left", leftpoints, leftparams);
