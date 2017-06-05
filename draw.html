@@ -590,6 +590,7 @@
             }
             left_tracks.splice(0);
             right_tracks.splice(0);
+            info_store.splice(0);
             var d = generate_json_from_view();
             d["iteration"] = parseInt($("input#iteration").val());
             d["threshold"] = parseFloat($("input#threshold").val());
