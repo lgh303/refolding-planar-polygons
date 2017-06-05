@@ -14,8 +14,6 @@
 </head>
 <body>
     <h4 id="info">&nbsp;</h4>
-    <button id="forceBegin">&lt;|</button>
-    <button id="forcePrevious">&lt;</button>
     <button id="run">Run</button>
     <button id="reset">Reset</button>
     <button id="display">Display</button>
@@ -31,6 +29,7 @@
         <tr><td>Threshold:</td><td><input type="text" id="threshold" value="0.01"></td></tr>
         <tr><td>Alpha:</td><td><input type="text" id="alpha" value="0.2"></td></tr>
         <tr><td>Gamma:</td><td><input type="text" id="gamma" value="1.5"></td></tr>
+        <tr><td>Display Speed</td><td><input type="number" id="display-speed" value=1 min=1 max=10></td></tr>
     </table>
     Distance: <label id="label-distance"></label>
     <div id='drawing'>
@@ -496,6 +495,9 @@
             if (json["gamma"]) $("input#gamma").val(json["gamma"]);
         }
 
+        function durationBySpeed() {
+            return 100 / $("#display-speed").val();
+        }
 
 
         // main
@@ -597,20 +599,23 @@
             }
             left_tracks.splice(0);
             right_tracks.splice(0);
+            info_store.splice(0);
             var d = generate_json_from_view();
-            d["iteration"] = parseInt($("input#iteration").val());
-            d["threshold"] = parseFloat($("input#threshold").val());
-            d["alpha"] = parseFloat($("input#alpha").val());
-            d["gamma"] = parseFloat($("input#gamma").val());
-            for (var i = 0; i < d.s_points.length; ++i) {
-                d.s_points[i][0] /= 54.0;
-                d.s_points[i][1] /= 36.0;
-                d.t_points[i][0] /= 54.0;
-                d.t_points[i][1] /= 36.0;
-            }
-            $("#display").prop("disabled", true);
-            $("#run").prop("disabled", true);
-            socket.emit("run", d);
+            if(d.s_points.length > 0) {
+                d["iteration"] = parseInt($("input#iteration").val());
+                d["threshold"] = parseFloat($("input#threshold").val());
+                d["alpha"] = parseFloat($("input#alpha").val());
+                d["gamma"] = parseFloat($("input#gamma").val());
+                for (var i = 0; i < d.s_points.length; ++i) {
+                    d.s_points[i][0] /= 54.0;
+                    d.s_points[i][1] /= 36.0;
+                    d.t_points[i][0] /= 54.0;
+                    d.t_points[i][1] /= 36.0;
+                }
+                $("#display").prop("disabled", true);
+                $("#run").prop("disabled", true);
+                socket.emit("run", d);
+            } else $("#info").text("Please add points first.");
         });
         socket.on("run", function(data) {
             for (var i = 0; i < data.s_points.length; ++i) {
@@ -627,8 +632,8 @@
             info_store.push(data);
             // 如果现在是第5个track，则调用函数开始animate过程
             if(left_tracks.length == 5) {
-                start_animate_tracks("left", leftpoints, leftparams, left_tracks, 100, true)();
-                start_animate_tracks("right", rightpoints, rightparams, right_tracks, 100)();
+                start_animate_tracks("left", leftpoints, leftparams, left_tracks, durationBySpeed(), true)();
+                start_animate_tracks("right", rightpoints, rightparams, right_tracks, durationBySpeed())();
             }
         });
 
@@ -645,7 +650,6 @@
             $(document).scrollTop(h);
             $("#area-display").html('');
             var prefix="display";
-            var duration=50;
             var n = leftpoints.length;
             for(var i=0; i<n; i++) {
                 d3.select("#area-" + prefix).append("circle").attr("id", prefix + "-circle-" + i).attr("cx", leftpoints[i][0]).attr("cy", leftpoints[i][1]).attr("r", radius).attr("fill", "black");
@@ -664,7 +668,7 @@
             tracks.push(rightpoints);
             $("#display").prop("disabled", true);
             $("#run").prop("disabled", true);
-            start_animate_tracks(prefix, leftpoints, leftparams, tracks, duration, 0)();
+            start_animate_tracks(prefix, leftpoints, leftparams, tracks, durationBySpeed(), 0)();
         });
 
         register_drag_operation("area-left", "left", leftpoints, leftparams);
