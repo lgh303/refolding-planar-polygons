@@ -611,6 +611,7 @@
 
 
         $("#run").click(function(){
+            $("#info").text("Waiting...");
             if(leftpoints.length != rightpoints.length) {
                 $("#info").text("Points aren't matched.");
                 return;
